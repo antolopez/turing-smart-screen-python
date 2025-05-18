@@ -242,6 +242,28 @@ def display_themed_line_graph(theme_data, values):
         background_image=get_theme_file_path(theme_data.get("BACKGROUND_IMAGE", None))
     )
 
+def display_themed_dynamic_image(theme_data, value):
+    if not theme_data.get("SHOW", False) or value is None:
+        return
+
+    # Redimensionar la imagen al tamaño especificado en el tema
+    width = theme_data.get("WIDTH", 1)
+    height = theme_data.get("HEIGHT", 1)
+
+    # Redimensionar manteniendo proporciones si se especifica
+    if theme_data.get("KEEP_ASPECT_RATIO", True):
+        value.thumbnail((width, height), Image.Resampling.LANCZOS)
+    else:
+        value = value.resize((width, height), Image.Resampling.LANCZOS)
+
+    display.lcd.DisplayPILImage(
+        image=value,
+        x=theme_data.get("X", 0),
+        y=theme_data.get("Y", 0),
+        image_width=width,
+        image_height=height,
+    )
+
 def display_themed_star_rating(theme_data, value, max_value=10, stars=5):
     """
     Muestra un rating con estrellas
@@ -935,6 +957,7 @@ class Custom:
                     custom_stat_class = getattr(sensors_custom, str(custom_stat))()
                     numeric_value = custom_stat_class.as_numeric()
                     string_value = custom_stat_class.as_string()
+                    image_value = custom_stat_class.as_image()
                     last_values = custom_stat_class.last_values()
                 except Exception as e:
                     logger.error(
@@ -963,6 +986,11 @@ class Custom:
                         value=numeric_value,
                         custom_text=string_value
                     )
+
+                # Display image
+                theme_data = config.THEME_DATA['STATS']['CUSTOM'][custom_stat].get("IMAGE", None)
+                if theme_data is not None and image_value is not None:
+                    display_themed_dynamic_image(theme_data=theme_data, value=image_value)
 
                 # Display rating
                 theme_data = config.THEME_DATA['STATS']['CUSTOM'][custom_stat].get("RATING", None)
