@@ -37,6 +37,8 @@ from uptime import uptime
 import library.config as config
 from library.display import display
 from library.log import logger
+from library.lcd.color import parse_color
+from PIL import Image, ImageDraw
 
 DEFAULT_HISTORY_SIZE = 10
 
@@ -239,6 +241,132 @@ def display_themed_line_graph(theme_data, values):
         background_color=theme_data.get("BACKGROUND_COLOR", (0, 0, 0)),
         background_image=get_theme_file_path(theme_data.get("BACKGROUND_IMAGE", None))
     )
+
+def display_themed_star_rating(theme_data, value, max_value=10, stars=5):
+    """
+    Muestra un rating con estrellas
+    :param theme_data: Datos del tema
+    :param value: Valor actual (0-10)
+    :param max_value: Valor máximo (por defecto 10)
+    :param stars: Número de estrellas a mostrar (por defecto 5)
+    """
+    if not theme_data.get("SHOW", False):
+        return
+
+    # Crear una imagen nueva con fondo transparente
+    left = theme_data.get("X", 0)
+    upper = theme_data.get("Y", 0)
+    width = theme_data.get("WIDTH", 100)
+    height = theme_data.get("HEIGHT", 20)
+    background_image=get_theme_file_path(theme_data.get("BACKGROUND_IMAGE", None))
+    background_color = theme_data.get("BACKGROUND_COLOR", (0, 0, 0, 0))
+
+    if background_image:
+        # Usar imagen de fondo existente
+        image = display.lcd.open_image(background_image)
+        # Recortar al tamaño necesario
+        image = image.crop((left, upper, left + width, upper + height))
+    else:
+        # Crear nueva imagen con color de fondo
+        image = Image.new('RGBA', (width, height), background_color)
+
+    draw = ImageDraw.Draw(image)
+
+    # Calcular el espacio para cada estrella
+    star_width = width // stars
+    star_height = height
+    star_size = min(star_width, star_height) - 2
+
+    # Calcular cuánto "llena" cada estrella
+    value_per_star = max_value / stars
+    filled_stars = value / value_per_star
+
+    # Color de las estrellas (con alpha para transparencia)
+    filled_color = parse_color(theme_data.get("FILLED_COLOR", (255, 215, 0)))
+    outline_color = parse_color(theme_data.get("OUTLINE_COLOR", (128, 128, 128)))  # Color del borde
+    outline_width = theme_data.get("OUTLINE_WIDTH", 2)  # Grosor del borde
+
+    # Dibujar las estrellas
+    for i in range(stars):
+        x = i * star_width
+        y = 0
+        center_x = x + star_width//2
+        center_y = y + star_height//2
+
+        # Calcular el "llenado" de esta estrella
+        fill_percent = max(0, min(1, filled_stars - i))
+
+        if fill_percent > 0:
+            # Crear una imagen temporal para esta estrella
+            star_img = Image.new('RGBA', (star_width, star_height), (0, 0, 0, 0))
+            star_draw = ImageDraw.Draw(star_img)
+
+            points = _calculate_star_points(star_width//2, star_height//2, star_size//2)
+
+            if fill_percent < 1:
+                # Crear la estrella completa primero
+                complete_star = Image.new('RGBA', (star_width, star_height), (0, 0, 0, 0))
+                complete_draw = ImageDraw.Draw(complete_star)
+                complete_draw.polygon(points, fill=filled_color, outline=outline_color, width=outline_width)
+
+                # Crear la máscara para recortar
+                mask = Image.new('L', (star_width, star_height), 0)
+                mask_draw = ImageDraw.Draw(mask)
+                clip_width = int(star_width * fill_percent)
+                mask_draw.rectangle([0, 0, clip_width, star_height], fill=255)
+
+                # Crear la estrella vacía con solo el contorno
+                empty_star = Image.new('RGBA', (star_width, star_height), (0, 0, 0, 0))
+                empty_draw = ImageDraw.Draw(empty_star)
+                empty_draw.polygon(points, outline=outline_color, fill=(0, 0, 0, 0), width=outline_width)
+
+                # Combinar las partes
+                # 1. Aplicar la máscara a la estrella completa
+                star_filled = Image.new('RGBA', (star_width, star_height), (0, 0, 0, 0))
+                star_filled.paste(complete_star, (0, 0), mask)
+
+                # 2. Crear la máscara inversa
+                mask_inverse = Image.new('L', (star_width, star_height), 255)
+                mask_inverse_draw = ImageDraw.Draw(mask_inverse)
+                mask_inverse_draw.rectangle([0, 0, clip_width, star_height], fill=0)
+
+                # 3. Aplicar la máscara inversa a la estrella vacía
+                star_empty = Image.new('RGBA', (star_width, star_height), (0, 0, 0, 0))
+                star_empty.paste(empty_star, (0, 0), mask_inverse)
+
+                # 4. Combinar ambas partes
+                star_img = Image.alpha_composite(star_filled, star_empty)
+            else:
+                # Para estrellas completamente llenas
+                star_draw.polygon(points, fill=filled_color, outline=outline_color, width=outline_width)
+
+            # Pegar la estrella en la imagen principal
+            image.paste(star_img, (x, y), star_img)
+        else:
+            # Dibujar solo el contorno para estrellas vacías
+            points = _calculate_star_points(center_x, center_y, star_size//2)
+            draw.polygon(points, outline=outline_color, fill=(0, 0, 0, 0), width=outline_width)
+
+    # Mostrar la imagen
+    display.lcd.DisplayPILImage(
+        image=image,
+        x=left,
+        y=upper,
+        image_width=width,
+        image_height=height
+    )
+
+def _calculate_star_points(x_center, y_center, size):
+    """Calcula los puntos para dibujar una estrella"""
+    points = []
+    for i in range(10):
+        # Alternar entre puntas externas e internas
+        angle = i * math.pi / 5 - math.pi / 2
+        r = size if i % 2 == 0 else size * 0.382  # Radio golden ratio
+        x = x_center + r * math.cos(angle)
+        y = y_center + r * math.sin(angle)
+        points.append((x, y))
+    return points
 
 
 def save_last_value(value: float, last_values: List[float], history_size: int):
@@ -835,6 +963,11 @@ class Custom:
                         value=numeric_value,
                         custom_text=string_value
                     )
+
+                # Display rating
+                theme_data = config.THEME_DATA['STATS']['CUSTOM'][custom_stat].get("RATING", None)
+                if theme_data is not None and numeric_value is not None:
+                    display_themed_star_rating(theme_data=theme_data, value=numeric_value)
 
                 # Display plot graph from histo values
                 theme_data = config.THEME_DATA['STATS']['CUSTOM'][custom_stat].get("LINE_GRAPH", None)
