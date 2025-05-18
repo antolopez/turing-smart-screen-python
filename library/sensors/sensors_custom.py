@@ -24,8 +24,10 @@ import platform
 from abc import ABC, abstractmethod
 from typing import List
 from PIL import Image
+from library.sensors.windows_media_controller import WindowsMediaController
 from library.sensors.plex_media_controller import PlexMediaController
 import library.config as config
+import re
 
 # Custom data classes must be implemented in this file, inherit the CustomDataSource and implement its 2 methods
 class CustomDataSource(ABC):
@@ -98,6 +100,95 @@ class ExampleCustomTextOnlyData(CustomDataSource):
     def last_values(self) -> List[float]:
         # If a custom data class only has text values, it won't be possible to display line graph
         pass
+
+class NowPlayingWindowsTrack(CustomDataSource):
+    def __init__(self):
+        self.media_controller = WindowsMediaController()
+        self.update_info()
+
+    def update_info(self):
+        """Actualiza la información del medio actual"""
+        self.media_info = self.media_controller.get_media_info()
+
+    def as_numeric(self) -> float:
+        pass
+
+    def as_string(self) -> str:
+        return self.media_info.title
+
+    def as_image(self) -> Image:
+        return self.media_info.thumbnail
+
+    def last_values(self) -> List[float]:
+        pass
+
+class NowPlayingWindowsTimeline(CustomDataSource):
+    def __init__(self):
+        self.media_controller = WindowsMediaController()
+        self.update_info()
+
+    def update_info(self):
+        """Actualiza la información del medio actual"""
+        self.media_info = self.media_controller.get_media_info()
+
+    def as_numeric(self) -> float:
+        return self.media_info.progress
+
+    def as_string(self) -> str:
+        return f"{self.media_info.position_str} / {self.media_info.duration_str}"
+
+    def as_image(self) -> Image:
+        pass
+
+    def last_values(self) -> List[float]:
+        pass
+
+class NowPlayingWindowsTrackInfo(CustomDataSource):
+    def __init__(self):
+        self.media_controller = WindowsMediaController()
+        self.update_info()
+
+    def update_info(self):
+        """Actualiza la información del medio actual"""
+        self.media_info = self.media_controller.get_media_info()
+
+    def as_numeric(self) -> float:
+        pass
+
+    def as_string(self) -> str:
+        track_number_info = f"Pista {self.media_info.track_number} de {self.media_info.total_tracks}"
+        return f"{self.media_info.album} \n {self.media_info.album_artist} \n {self.media_info.genre} \n \n Interprete: {self.media_info.artist} \n {track_number_info}"
+
+    def as_image(self) -> Image:
+        pass
+
+    def last_values(self) -> List[float]:
+        pass
+
+class NowPlayingWindowsPlayer(CustomDataSource):
+    def __init__(self):
+        self.media_controller = WindowsMediaController()
+        self.update_info()
+
+    def update_info(self):
+        """Actualiza la información del medio actual"""
+        self.media_info = self.media_controller.get_media_info()
+
+    def as_numeric(self) -> float:
+        pass
+
+    def as_string(self) -> str:
+        app = self.media_info.custom_data.get('application', 'Desconocido')
+        # Usando regex para coger todo hasta el primer punto
+        app = re.split(r'\.', app)[0]
+        return f"{app}"
+
+    def as_image(self) -> Image:
+        pass
+
+    def last_values(self) -> List[float]:
+        pass
+
 class NowPlayingPlexTrack(CustomDataSource):
     def __init__(self):
         media_config = config.CONFIG_DATA.get('media_providers', {})
