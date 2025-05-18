@@ -1,0 +1,104 @@
+# This theme is an example of how to implement and display custom data in System Monitor
+# It is possible to add external sensor sources that come from custom Python code or external modules, and integrate them in an existing theme
+# This file is the theme part to display the custom data, custom data gathering must first be implemented in Python into the sensors_custom.py file
+# Names of the custom sensor classes listed here must be an exact match to class names in sensors_custom.py
+---
+display:
+  DISPLAY_ORIENTATION: landscape
+  DISPLAY_RGB_LED: 61, 184, 225
+
+static_images:
+  BACKGROUND:
+    PATH: background.png
+    X: 0
+    Y: 0
+    WIDTH: 480
+    HEIGHT: 320
+
+STATS:
+
+  # All custom sensor classes are listed under CUSTOM
+  CUSTOM:
+
+    # For now the refresh interval (in seconds) is the same for all custom data classes
+    INTERVAL: 3
+
+    NowPlayingPlexTrack:
+
+      TEXT:
+        SHOW: True
+        X: 29
+        Y: 235
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 20
+        FONT_COLOR: 61, 184, 225
+        #BACKGROUND_COLOR: 255, 0, 0
+        BACKGROUND_IMAGE: background.png
+        WIDTH: 420
+        HEIGHT: 50
+        ALIGN: center
+        ANCHOR: mm
+
+      IMAGE:
+        SHOW: True
+        X: 35
+        Y: 35
+        WIDTH: 155
+        HEIGHT: 155
+
+      GRAPH:
+        SHOW: True
+        X: 50
+        Y: 210
+        WIDTH: 385
+        HEIGHT: 10
+        MIN_VALUE: 0
+        MAX_VALUE: 100
+        BAR_COLOR: 200, 215, 0
+        BAR_OUTLINE: True
+        # BACKGROUND_COLOR: 0, 0, 0
+        BACKGROUND_IMAGE: background.png
+
+    NowPlayingPlexTrackRating:
+      RATING:
+        SHOW: True
+        X: 220
+        Y: 160
+        WIDTH: 200
+        HEIGHT: 30
+        #FILLED_COLOR: 255, 215, 20  # Amarillo opaco
+        OUTLINE_COLOR: 200, 215, 0
+        OUTLINE_WIDTH: 2  # Grosor del borde
+        BACKGROUND_IMAGE: background.png
+
+      TEXT:
+        SHOW: True
+        X: 50
+        Y: 222
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 12
+        FONT_COLOR: 200, 215, 0
+        #BACKGROUND_COLOR: 255, 0, 0
+        BACKGROUND_IMAGE: background.png
+        WIDTH: 385
+        HEIGHT: 12
+        ALIGN: center
+        ANCHOR: mm
+
+    NowPlayingPlexTrackInfo:
+      TEXT:
+        SHOW: True
+        X: 200
+        Y: 35
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 14
+        FONT_COLOR: 61, 184, 225
+        #BACKGROUND_COLOR: 255, 0, 0
+        BACKGROUND_IMAGE: background.png
+        WIDTH: 250
+        HEIGHT: 120
+        ALIGN: center
+        ANCHOR: mm
+
+
+

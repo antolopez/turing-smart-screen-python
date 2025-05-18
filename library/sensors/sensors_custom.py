@@ -23,7 +23,9 @@ import math
 import platform
 from abc import ABC, abstractmethod
 from typing import List
-
+from PIL import Image
+from library.sensors.plex_media_controller import PlexMediaController
+import library.config as config
 
 # Custom data classes must be implemented in this file, inherit the CustomDataSource and implement its 2 methods
 class CustomDataSource(ABC):
@@ -96,3 +98,96 @@ class ExampleCustomTextOnlyData(CustomDataSource):
     def last_values(self) -> List[float]:
         # If a custom data class only has text values, it won't be possible to display line graph
         pass
+class NowPlayingPlexTrack(CustomDataSource):
+    def __init__(self):
+        media_config = config.CONFIG_DATA.get('media_providers', {})
+        plex_config = media_config.get('plex', {})
+        product = plex_config.get('product', 'Plexamp')
+        profile = plex_config.get('profile', 'Windows')
+        device = plex_config.get('device', None)
+        self.media_controller = PlexMediaController(plex_config.get('url'),  plex_config.get('token'), product, profile, device)
+        self.update_info()
+
+    def update_info(self):
+        """Actualiza la información del medio actual"""
+        self.media_info = self.media_controller.get_media_info()
+
+    def as_numeric(self) -> float:
+        self.update_info()
+        return self.media_info.progress
+
+    def as_string(self) -> str:
+        self.update_info()
+        return self.media_info.title
+
+    def as_image(self) -> Image:
+        self.update_info()
+        return self.media_info.thumbnail
+
+    def last_values(self) -> List[float]:
+        pass
+
+class NowPlayingPlexTrackRating(CustomDataSource):
+    def __init__(self):
+        media_config = config.CONFIG_DATA.get('media_providers', {})
+        plex_config = media_config.get('plex', {})
+        product = plex_config.get('product', 'Plexamp')
+        profile = plex_config.get('profile', 'Windows')
+        device = plex_config.get('device', None)
+        self.media_controller = PlexMediaController(plex_config.get('url'),  plex_config.get('token'), product, profile, device)
+        self.update_info()
+
+    def update_info(self):
+        """Actualiza la información del medio actual"""
+        self.media_info = self.media_controller.get_media_info()
+
+    def as_numeric(self) -> float:
+        self.update_info()
+        return self.media_info.custom_data.get('rating', 0) or 0
+
+    def as_string(self) -> str:
+        self.update_info()
+
+        return f"{self.media_info.position_str} / {self.media_info.duration_str}"
+
+    def as_image(self) -> Image:
+        pass
+
+    def last_values(self) -> List[float]:
+        pass
+
+class NowPlayingPlexTrackInfo(CustomDataSource):
+    def __init__(self):
+        media_config = config.CONFIG_DATA.get('media_providers', {})
+        plex_config = media_config.get('plex', {})
+        product = plex_config.get('product', 'Plexamp')
+        profile = plex_config.get('profile', 'Windows')
+        device = plex_config.get('device', None)
+        self.media_controller = PlexMediaController(plex_config.get('url'),  plex_config.get('token'), product, profile, device)
+        self.update_info()
+
+    def update_info(self):
+        """Actualiza la información del medio actual"""
+        self.media_info = self.media_controller.get_media_info()
+
+    def as_numeric(self) -> float:
+        pass
+
+    def as_string(self) -> str:
+        self.update_info()
+
+        year = self.media_info.custom_data.get('year', 0) or ''
+
+        disc_number = self.media_info.custom_data.get('disc_number', 1)
+        total_discs = self.media_info.custom_data.get('total_discs', 1)
+        track_number_info = f"Pista {self.media_info.track_number} de {self.media_info.total_tracks}"
+        if total_discs > 1:
+            track_number_info = f"Disco {disc_number} de {total_discs} - {track_number_info}"
+        return f"{self.media_info.album} ({year}) \n {self.media_info.album_artist} \n {self.media_info.genre} \n \n Interprete: {self.media_info.artist} \n {track_number_info}"
+
+    def as_image(self) -> Image:
+        pass
+
+    def last_values(self) -> List[float]:
+        pass
+
