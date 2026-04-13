@@ -269,12 +269,30 @@ class NowPlayingPlexTrackInfo(CustomDataSource):
 
         year = self.media_info.custom_data.get('year', 0) or ''
 
+        disc_str = "Disco"
+        if self.media_info.custom_data.get('media_type', '') == 'movie':
+            disc_str = "Parte"
+        if self.media_info.custom_data.get('media_type', '') == 'show':
+            disc_str = "T"
+
+        track_str = "Pista"
+        if self.media_info.custom_data.get('media_type', '') == 'movie':
+            track_str = "Parte"
+        if self.media_info.custom_data.get('media_type', '') == 'show':
+            track_str = "Episodio"
+
+        artist_str = "Interprete:"
+        if self.media_info.custom_data.get('media_type', '') == 'movie':
+            artist_str = ""
+        if self.media_info.custom_data.get('media_type', '') == 'show':
+            artist_str = ""
+
         disc_number = self.media_info.custom_data.get('disc_number', 1)
         total_discs = self.media_info.custom_data.get('total_discs', 1)
-        track_number_info = f"Pista {self.media_info.track_number} de {self.media_info.total_tracks}"
+        track_number_info = f"{track_str} {self.media_info.track_number} de {self.media_info.total_tracks}"
         if total_discs > 1:
-            track_number_info = f"Disco {disc_number} de {total_discs} - {track_number_info}"
-        return f"{self.media_info.album} ({year}) \n {self.media_info.album_artist} \n {self.media_info.genre} \n \n Interprete: {self.media_info.artist} \n {track_number_info}"
+            track_number_info = f"{disc_str} {disc_number} de {total_discs} - {track_number_info}"
+        return f"{self.media_info.album} ({year}) \n {self.media_info.album_artist} \n {self.media_info.genre} \n \n {artist_str} {self.media_info.artist} \n {track_number_info}"
 
     def as_image(self) -> Image:
         pass
