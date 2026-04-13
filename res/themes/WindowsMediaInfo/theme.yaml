@@ -45,6 +45,7 @@ STATS:
         Y: 35
         WIDTH: 155
         HEIGHT: 155
+        BACKGROUND_IMAGE: background.png
 
     NowPlayingWindowsTimeline:
       GRAPH:
