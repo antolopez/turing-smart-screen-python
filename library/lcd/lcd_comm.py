@@ -1,7 +1,9 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 # turing-smart-screen-python - a Python system monitor and library for USB-C displays like Turing Smart Screen or XuanFang
 # https://github.com/mathoudebine/turing-smart-screen-python/
-
-# Copyright (C) 2021-2023  Matthieu Houdebine (mathoudebine)
+#
+# Copyright (C) 2021 Matthieu Houdebine (mathoudebine)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,6 +50,7 @@ class LcdComm(ABC):
         self.lcd_serial = None
 
         # String containing absolute path to serial port e.g. "COM3", "/dev/ttyACM1" or "AUTO" for auto-discovery
+        # Ignored for USB HID screens
         self.com_port = com_port
 
         # Display always start in portrait orientation by default
@@ -122,6 +125,10 @@ class LcdComm(ABC):
         assert self.lcd_serial is not None
         return self.lcd_serial.read(size)
 
+    def serial_readall(self) -> bytes:
+        assert self.lcd_serial is not None
+        return self.lcd_serial.readall()
+
     def serial_flush_input(self):
         if self.lcd_serial is not None:
             self.lcd_serial.reset_input_buffer()
@@ -174,8 +181,8 @@ class LcdComm(ABC):
             return self.serial_read(readSize)
 
     @staticmethod
-    @abstractmethod
     def auto_detect_com_port() -> Optional[str]:
+        # To implement only for screens that use serial commands
         pass
 
     @abstractmethod
@@ -221,6 +228,12 @@ class LcdComm(ABC):
 
     def DisplayBitmap(self, bitmap_path: str, x: int = 0, y: int = 0, width: int = 0, height: int = 0):
         image = self.open_image(bitmap_path)
+
+        # Resize the picture if custom width/height provided
+        if width != 0 and height != 0:
+            if width != image.size[0] or height != image.size[1]:
+                image = image.resize((width, height))
+
         self.DisplayPILImage(image, x, y, width, height)
 
     def DisplayText(
@@ -244,9 +257,9 @@ class LcdComm(ABC):
         font_color = parse_color(font_color)
         background_color = parse_color(background_color)
 
-        assert x <= self.get_width(), 'Text X coordinate ' + str(x) + ' must be <= display width ' + str(
+        assert x <= self.get_width(), 'Text "' + text + '" X coordinate ' + str(x) + ' must be <= display width ' + str(
             self.get_width())
-        assert y <= self.get_height(), 'Text Y coordinate ' + str(y) + ' must be <= display height ' + str(
+        assert y <= self.get_height(), 'Text "' + text + '" Y coordinate ' + str(y) + ' must be <= display height ' + str(
             self.get_height())
         assert len(text) > 0, 'Text must not be empty'
         assert font_size > 0, "Font size must be > 0"
@@ -368,7 +381,8 @@ class LcdComm(ABC):
                          axis_font: str = "./res/fonts/roboto/Roboto-Black.ttf",
                          axis_font_size: int = 10,
                          background_color: Color = (255, 255, 255),
-                         background_image: Optional[str] = None):
+                         background_image: Optional[str] = None,
+                         axis_minmax_format: str = "{:0.0f}"):
         # Generate a plot graph and display it
         # Provide the background image path to display plot graph with transparent background
 
@@ -408,7 +422,7 @@ class LcdComm(ABC):
 
         step = width / len(values)
         # pre compute yScale multiplier value
-        yScale = height / (max_value - min_value)
+        yScale = (height / (max_value - min_value)) if (max_value - min_value) != 0 else 0
 
         plotsX = []
         plotsY = []
@@ -439,13 +453,13 @@ class LcdComm(ABC):
 
             # Draw Legend
             draw.line([0, 0, 1, 0], fill=axis_color)
-            text = f"{int(max_value)}"
+            text = axis_minmax_format.format(max_value)
             ttfont = self.open_font(axis_font, axis_font_size)
             _, top, right, bottom = ttfont.getbbox(text)
             draw.text((2, 0 - top), text,
                       font=ttfont, fill=axis_color)
 
-            text = f"{int(min_value)}"
+            text = axis_minmax_format.format(min_value)
             _, top, right, bottom = ttfont.getbbox(text)
             draw.text((width - 1 - right, height - 2 - bottom), text,
                       font=ttfont, fill=axis_color)

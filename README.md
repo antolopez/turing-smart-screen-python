@@ -1,36 +1,34 @@
 # ![Icon](https://raw.githubusercontent.com/mathoudebine/turing-smart-screen-python/main/res/icons/monitor-icon-17865/24.png) turing-smart-screen-python
 
-### ⚠️ DISCLAIMER - PLEASE READ ⚠️
+> [!WARNING]
+> 
+> This project is **not affiliated, associated, authorized, endorsed by, or in any way officially connected with Turing / XuanFang / Kipye brands**, or any of theirs subsidiaries, affiliates, manufacturers or sellers of their products. All product and company names are the registered trademarks of their original owners.
+> 
+> This project is an open-source alternative software, NOT the original software provided for the smart screens. **Please do not open issues for USBMonitor.exe/ExtendScreen.exe or for the smart screens hardware here**.
+> * for Turing Smart Screen, use the official forum here: http://discuz.turzx.com/
+> * for other smart screens, contact your reseller
 
-This project is **not affiliated, associated, authorized, endorsed by, or in any way officially connected with Turing / XuanFang / Kipye brands**, or any of theirs subsidiaries, affiliates, manufacturers or sellers of their products. All product and company names are the registered trademarks of their original owners.
-
-This project is an open-source alternative software, NOT the original software provided for the smart screens. **Please do not open issues for USBMonitor.exe/ExtendScreen.exe or for the smart screens hardware here**.
-* for Turing Smart Screen, use the official forum here: http://discuz.turzx.com/
-* for other smart screens, contact your reseller
----
-
-![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logoColor=white&logo=data:image/svg%2bxml;base64,PHN2ZyByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+V2luZG93czwvdGl0bGU+PHBhdGggZmlsbCA9ICIjRkZGRkZGIiBkPSJNMCwwSDExLjM3N1YxMS4zNzJIMFpNMTIuNjIzLDBIMjRWMTEuMzcySDEyLjYyM1pNMCwxMi42MjNIMTEuMzc3VjI0SDBabTEyLjYyMywwSDI0VjI0SDEyLjYyMyIvPjwvc3ZnPg==) ![macOS](https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=apple&logoColor=white) ![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-A22846?style=for-the-badge&logo=Raspberry%20Pi&logoColor=white) ![Python](https://img.shields.io/badge/Python-3.9/3.13-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) [![Licence](https://img.shields.io/github/license/mathoudebine/turing-smart-screen-python?style=for-the-badge)](./LICENSE)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Windows](https://img.shields.io/badge/Windows%2010%2F11-0078D6?style=for-the-badge&logoColor=white&logo=data:image/svg%2bxml;base64,PHN2ZyByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+V2luZG93czwvdGl0bGU+PHBhdGggZmlsbCA9ICIjRkZGRkZGIiBkPSJNMCwwSDExLjM3N1YxMS4zNzJIMFpNMTIuNjIzLDBIMjRWMTEuMzcySDEyLjYyM1pNMCwxMi42MjNIMTEuMzc3VjI0SDBabTEyLjYyMywwSDI0VjI0SDEyLjYyMyIvPjwvc3ZnPg==) [![macOS](https://img.shields.io/badge/mac%20os%20(⚠️major%20bug)-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/mathoudebine/turing-smart-screen-python/issues/7) ![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-A22846?style=for-the-badge&logo=Raspberry%20Pi&logoColor=white) ![Python](https://img.shields.io/badge/Python-3.X-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) [![Licence](https://img.shields.io/github/license/mathoudebine/turing-smart-screen-python?style=for-the-badge)](./LICENSE)
   
-A Python system monitor program and an abstraction library for **small IPS USB-C (UART) displays.**    
+A Python system monitor program and an abstraction library for **small IPS USB-C displays.**    
 
 Supported operating systems : macOS, Windows, Linux (incl. Raspberry Pi), basically all OS that support Python 3.9+  
 
 ### ✅ Supported smart screens models:
 
-| ✅ Turing Smart Screen 3.5"                           | ✅ XuanFang 3.5"                                   | ✅ Turing Smart Screen 5"                    |
-|------------------------------------------------------|---------------------------------------------------|---------------------------------------------|
-| <img src="res/docs/turing.webp"/>                    | <img src="res/docs/xuanfang.webp"/>               | <img src="res/docs/turing5inch.png"/>       |
-| also improperly called "revision A" by the resellers | revision B & flagship (with backplate & RGB LEDs) | basic support (no video or storage for now) |
+| ✅ Turing Smart Screen / TURZX                                                                                                                                                                                                                                                                                                                                                                  |
+|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <img src="res/docs/turing.webp" width="30%" height="30%"/> <img src="res/docs/turing46inch.png" width="30%" height="30%"/> <img src="res/docs/turing5inch.png" width="30%" height="30%"/> <br/> <img src="res/docs/turing2inch.webp" width="30%" height="30%"/> <img src="res/docs/turing8inch.png" width="30%" height="30%"/> <img src="res/docs/turing8inch.webp" width="30%" height="30%"/> |
+| All available sizes and hardware revisions supported: **2.1" / 2.8" / 3.5" / 4.6" / 5" / 5.2" / 8.0" / 8.8" / 9.2" / 12.3"** <br/>UART and USB protocols supported. Note: no video or storage support for now                                                                                                                                                                                  |
 
-| ⚠️ Turing Smart Screen 8.8"                  | ✅ Turing Smart Screen 2.1"                                       |
-|---------------------------------------------|------------------------------------------------------------------|
-| <img src="res/docs/turing8inch.webp"/>      | <img src="res/docs/turing2inch.webp"  width="60%" height="60%"/> |
-| basic support (no video or storage for now)<br/>⚠️ [New revision V1.1 not supported!](https://github.com/mathoudebine/turing-smart-screen-python/issues/727)<br/>⚠️ [Current issues with first revision](https://github.com/mathoudebine/turing-smart-screen-python/issues/724) | basic support (no video or storage for now)                      |
+| ✅ XuanFang 3.5"                                   | ✅ [UsbPCMonitor 3.5" / 5"](https://aliexpress.com/item/1005003931363455.html)                       | ✅ Kipye Qiye Smart Display 3.5"                                                  |
+|---------------------------------------------------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| <img src="res/docs/xuanfang.webp"/>               | <img src="res/docs/UsbPCMonitor_5inch.webp" width="60%" height="60%"/>                              | <img src="res/docs/kipye-qiye-35.webp" width="60%" height="60%"/>                |
+| revision B & flagship (with backplate & RGB LEDs) | Unknown manufacturer, visually similar to Turing 3.5" / 5". Original software is `UsbPCMonitor.exe` | Front panel has an engraved inscription "奇叶智显" Qiye Zhixian (Qiye Smart Display) |
 
-| ✅ [UsbPCMonitor 3.5" / 5"](https://aliexpress.com/item/1005003931363455.html)                       | ✅ [Kipye Qiye Smart Display 3.5"](https://www.aliexpress.us/item/3256803899049957.html) |
-|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
-| <img src="res/docs/UsbPCMonitor_5inch.webp" width="60%" height="60%"/>                              | <img src="res/docs/kipye-qiye-35.webp" width="60%" height="60%"/>                       |
-| Unknown manufacturer, visually similar to Turing 3.5" / 5". Original software is `UsbPCMonitor.exe` | Front panel has an engraved inscription "奇叶智显" Qiye Zhixian (Qiye Smart Display)        |
+| ✅ WeAct Studio Display FS V1 0.96"                            | ✅ WeAct Studio Display FS V1 3.5"                            |
+|---------------------------------------------------------------|--------------------------------------------------------------|
+| <img src="res/docs/weact_0.96.jpg" width="60%" height="60%"/> | <img src="res/docs/weact_3.5.png" width="60%" height="60%"/> |
 
 <details>
 
@@ -40,6 +38,11 @@ Supported operating systems : macOS, Windows, Linux (incl. Raspberry Pi), basica
 |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | <img src="res/docs/ax206.jpg" width="45%" height="45%" /> <img src="res/docs/geekteches_ad35.jpg" width="45%" height="45%" /> <br/> <img src="res/docs/smartcool_lcd.webp" width="45%" height="45%" /> | <img src="res/docs/acemagic-s1-mini.jpg"/>                                                                                                                   |
 | Not supported for now. Produced by multiple manufacturers, all use the same [Appotech AX206 hacked photo frame firmware](https://github.com/dreamlayers/dpf-ax). Supported by AIDA64 and lcd4linux     | Not supported for now but could be integrated: protocol has been decoded, [see here](https://github.com/mathoudebine/turing-smart-screen-python/issues/677). |
+
+| ❔ _NXElec BeadaPanel 3/4/5/6/7_                                                                                                                                                                                                                                                                                           |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <img src="res/docs/beadapanel-3.jpg" width="30%" height="30%" /> <img src="res/docs/beadapanel-5s.jpg" width="30%" height="30%" /> <img src="res/docs/beadapanel-6.jpg" width="30%" height="30%" />                                                                                                                       |
+| Not supported for now but could be integrated: [Pankel-Link V1.0 Protocol Specification](https://www.nxelec.com/documents/bp/Panel-Link_USB_Media_Stream_Transport_Protocol_Rev10.pdf) / [Status-Link V1.1 Protocol Specification](https://www.nxelec.com/documents/bp/Status-Link_USB_Panel_Control_Protocol_Rev11.pdf). |
 
 | ❌ _Waveshare [2.1inch](https://www.waveshare.com/wiki/2.1inch-USB-Monitor) / [2.8inch](https://www.waveshare.com/wiki/2.8inch-USB-Monitor) / [5inch](https://www.waveshare.com/wiki/5inch-USB-Monitor) / [7inch](https://www.waveshare.com/wiki/7inch-USB-Monitor) USB-Monitor_                                                                                                            | ❌ _[GUITION Smart screen 3.5"](https://aliexpress.com/item/1005006169962183.html)_                                                                                                                                                                                                          |
 |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -78,7 +81,7 @@ Some themes are already included for a quick start!
 
 * Fully functional multi-OS code base (operates out of the box, tested on Windows, Linux & MacOS).
 * Display configuration using GUI configuration wizard or `config.yaml` file: no Python code to edit.
-* Compatible with [3.5" & 5" smart screen models (Turing, XuanFang...)](https://github.com/mathoudebine/turing-smart-screen-python/wiki/Hardware-revisions). Backplate RGB LEDs are also supported for available models!
+* Compatible with [multiple smart screen models (Turing, XuanFang...)](https://github.com/mathoudebine/turing-smart-screen-python/wiki/Hardware-revisions). Backplate RGB LEDs are also supported for available models!
 * Support [multiple hardware sensors and metrics (CPU/GPU usage, temperatures, memory, disks, etc)](https://github.com/mathoudebine/turing-smart-screen-python/wiki/System-monitor-:-themes#stats-entry) with configurable refresh intervals.
 * Allow [creation of themes (see `res/themes`) with `theme.yaml` files using theme editor](https://github.com/mathoudebine/turing-smart-screen-python/wiki/System-monitor-:-themes) to be [shared with the community!](https://github.com/mathoudebine/turing-smart-screen-python/discussions/categories/themes)
 * Easy to expand: [custom Python data sources](https://github.com/mathoudebine/turing-smart-screen-python/wiki/System-monitor-:-themes#add-custom-stats-to-a-theme) can be written to pull specific information and display it on themes like any other sensor.
@@ -126,4 +129,3 @@ If you have trouble running the program as described in the wiki, please check [
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=mathoudebine/turing-smart-screen-python&type=Date)](https://star-history.com/#mathoudebine/turing-smart-screen-python&Date)
-

@@ -1,13 +1,15 @@
 #!/usr/bin/env python
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 # turing-smart-screen-python - a Python system monitor and library for USB-C displays like Turing Smart Screen or XuanFang
 # https://github.com/mathoudebine/turing-smart-screen-python/
-
-# Copyright (C) 2021-2023  Matthieu Houdebine (mathoudebine)
-# Copyright (C) 2022-2023  Rollbacke
-# Copyright (C) 2022-2023  Ebag333
-# Copyright (C) 2022-2023  w1ld3r
-# Copyright (C) 2022-2023  Charles Ferguson (gerph)
-# Copyright (C) 2022-2023  Russ Nelson (RussNelson)
+#
+# Copyright (C) 2021 Matthieu Houdebine (mathoudebine)
+# Copyright (C) 2022 Rollbacke
+# Copyright (C) 2022 Ebag333
+# Copyright (C) 2022 w1ld3r
+# Copyright (C) 2022 Charles Ferguson (gerph)
+# Copyright (C) 2022 Russ Nelson (RussNelson)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,17 +25,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # This file is the system monitor main program to display HW sensors on your screen using themes (see README)
-import glob
+
+from library.pythoncheck import check_python_version
+check_python_version()
+
 import os
 import sys
-
-MIN_PYTHON = (3, 9)
-if sys.version_info < MIN_PYTHON:
-    print("[ERROR] Python %s.%s or later is required." % MIN_PYTHON)
-    try:
-        sys.exit(0)
-    except:
-        os._exit(0)
 
 try:
     import atexit
@@ -70,7 +67,7 @@ except:
     # If pystray cannot be loaded do not stop the program, just ignore it. The tray icon will not be displayed.
     pass
 
-MAIN_DIRECTORY = str(Path(__file__).parent.resolve()) + "/"
+MAIN_DIRECTORY = Path(__file__).resolve().parent
 
 if __name__ == "__main__":
 
@@ -112,17 +109,20 @@ if __name__ == "__main__":
         except:
             os._exit(0)
 
-
     def on_signal_caught(signum, frame=None):
         logger.info("Caught signal %d, exiting" % signum)
         clean_stop()
 
-
     def on_configure_tray(tray_icon, item):
         logger.info("Configure from tray icon")
-        subprocess.Popen(f'"{MAIN_DIRECTORY}{glob.glob("configure.*", root_dir=MAIN_DIRECTORY)[0]}"', shell=True)
-        clean_stop(tray_icon)
 
+        configure_file = next(MAIN_DIRECTORY.glob("configure.*"))
+
+        if platform.system() == "Windows":
+            subprocess.Popen([str(configure_file)], shell=True)
+        else:
+            subprocess.Popen([str(configure_file)])
+        clean_stop(tray_icon)
 
     def on_exit_tray(tray_icon, item):
         logger.info("Exit from tray icon")
@@ -167,7 +167,7 @@ if __name__ == "__main__":
         tray_icon = pystray.Icon(
             name='Turing System Monitor',
             title='Turing System Monitor',
-            icon=Image.open(MAIN_DIRECTORY + "res/icons/monitor-icon-17865/64.png"),
+            icon=Image.open(MAIN_DIRECTORY / "res/icons/monitor-icon-17865/64.png"),
             menu=pystray.Menu(
                 pystray.MenuItem(
                     text='Configure',
