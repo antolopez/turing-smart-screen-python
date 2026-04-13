@@ -243,25 +243,67 @@ def display_themed_line_graph(theme_data, values):
     )
 
 def display_themed_dynamic_image(theme_data, value):
+    """Muestra una imagen dinámica manteniendo la relación de aspecto y centrándola"""
     if not theme_data.get("SHOW", False) or value is None:
         return
 
-    # Redimensionar la imagen al tamaño especificado en el tema
-    width = theme_data.get("WIDTH", 1)
-    height = theme_data.get("HEIGHT", 1)
+    # Obtener dimensiones objetivo
+    target_width = theme_data.get("WIDTH", 1)
+    target_height = theme_data.get("HEIGHT", 1)
 
-    # Redimensionar manteniendo proporciones si se especifica
+    # Crear una nueva imagen con el fondo especificado
+    background = Image.new('RGBA', (target_width, target_height),
+                          theme_data.get("BACKGROUND_COLOR", (0, 0, 0, 0)))
+
+    # Si hay imagen de fondo especificada, usarla
+    background_image_path = get_theme_file_path(theme_data.get("BACKGROUND_IMAGE", None))
+    if background_image_path:
+        try:
+            bg_img = Image.open(background_image_path)
+            bg_img = bg_img.resize((target_width, target_height), Image.Resampling.LANCZOS)
+            # Si la imagen de fondo tiene canal alpha, combinarla con el color de fondo
+            if bg_img.mode == 'RGBA':
+                background = Image.alpha_composite(background, bg_img)
+            else:
+                background = bg_img
+        except Exception as e:
+            logger.error(f"Error cargando imagen de fondo: {e}")
+
+    # Calcular relación de aspecto
+    img_ratio = value.width / value.height
+    target_ratio = target_width / target_height
+
     if theme_data.get("KEEP_ASPECT_RATIO", True):
-        value.thumbnail((width, height), Image.Resampling.LANCZOS)
-    else:
-        value = value.resize((width, height), Image.Resampling.LANCZOS)
+        if img_ratio > target_ratio:
+            # Imagen más ancha que el área objetivo
+            new_width = target_width
+            new_height = int(new_width / img_ratio)
+            top_padding = (target_height - new_height) // 2
+            left_padding = 0
+        else:
+            # Imagen más alta que el área objetivo
+            new_height = target_height
+            new_width = int(new_height * img_ratio)
+            left_padding = (target_width - new_width) // 2
+            top_padding = 0
 
+        # Redimensionar la imagen manteniendo proporción
+        resized_img = value.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+        # Pegar la imagen centrada sobre el fondo
+        background.paste(resized_img, (left_padding, top_padding))
+    else:
+        # Si no mantenemos proporción, simplemente redimensionar al tamaño objetivo
+        resized_img = value.resize((target_width, target_height), Image.Resampling.LANCZOS)
+        background = resized_img
+
+    # Mostrar la imagen final
     display.lcd.DisplayPILImage(
-        image=value,
+        image=background,
         x=theme_data.get("X", 0),
         y=theme_data.get("Y", 0),
-        image_width=width,
-        image_height=height,
+        image_width=target_width,
+        image_height=target_height,
     )
 
 def display_themed_star_rating(theme_data, value, max_value=10, stars=5):
