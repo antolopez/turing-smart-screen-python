@@ -38,7 +38,19 @@ def load_yaml(configfile):
 PATH = sys.path[0]
 MAIN_DIRECTORY = Path(__file__).parent.parent.resolve()
 FONTS_DIR = str(MAIN_DIRECTORY / "res" / "fonts") + "/"
-CONFIG_DATA = load_yaml(MAIN_DIRECTORY / "config.yaml")
+
+# Parse command line arguments for config file and revision
+config_filename = 'config.yaml'
+i = 0
+while i < len(sys.argv):
+    if sys.argv[i] == '--config' and i + 1 < len(sys.argv):
+        config_filename = sys.argv[i + 1]
+        i += 2
+    else:
+        i += 1
+
+CONFIG_DATA = load_yaml(MAIN_DIRECTORY / config_filename)
+
 THEME_DEFAULT = load_yaml(MAIN_DIRECTORY / "res/themes/default.yaml")
 THEME_DATA = None
 
