@@ -283,6 +283,17 @@ class LcdComm(ABC):
         ttfont = self.open_font(font, font_size)
         d = ImageDraw.Draw(text_image)
 
+        # Adjust font size if text doesn't fit in width
+        if width > 0:
+            bbox = d.textbbox((0, 0), text, font=ttfont)
+            text_width = bbox[2] - bbox[0]
+            min_font_size = 8
+            while text_width > width and font_size > min_font_size:
+                font_size -= 1
+                ttfont = self.open_font(font, font_size)
+                bbox = d.textbbox((0, 0), text, font=ttfont)
+                text_width = bbox[2] - bbox[0]
+
         if width == 0 or height == 0:
             left, top, right, bottom = d.textbbox((x, y), text, font=ttfont, align=align, anchor=anchor)
 
