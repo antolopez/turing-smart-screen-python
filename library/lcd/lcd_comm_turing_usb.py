@@ -750,7 +750,7 @@ def send_video(dev, video_path, loop=False):
 
 def _encode_png(image: Image.Image) -> bytes:
     buffer = BytesIO()
-    image.save(buffer, format="PNG", compress_level=9)
+    image.save(buffer, format="PNG", compress_level=5)
     return buffer.getvalue()
 
 
