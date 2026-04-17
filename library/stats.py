@@ -347,7 +347,7 @@ def display_themed_star_rating(theme_data, value, max_value=10, stars=5):
     value_per_star = max_value / stars
     filled_stars = value / value_per_star
 
-    # Color de las estrellas (con alpha para transparencia)
+    # Color de las estrellas
     filled_color = parse_color(theme_data.get("FILLED_COLOR", (255, 215, 0)))
     outline_color = parse_color(theme_data.get("OUTLINE_COLOR", (128, 128, 128)))  # Color del borde
     outline_width = theme_data.get("OUTLINE_WIDTH", 2)  # Grosor del borde
@@ -411,7 +411,7 @@ def display_themed_star_rating(theme_data, value, max_value=10, stars=5):
         else:
             # Dibujar solo el contorno para estrellas vacías
             points = _calculate_star_points(center_x, center_y, star_size//2)
-            draw.polygon(points, outline=outline_color, fill=(0, 0, 0, 0), width=outline_width)
+            draw.polygon(points, outline=outline_color, width=outline_width)
 
     # Mostrar la imagen
     display.lcd.DisplayPILImage(
