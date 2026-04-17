@@ -496,13 +496,14 @@ On Windows, manually copy 'external/libusb-1.0/libusb-1.0.dll' to C:\\Windows\\S
     return dev, dev_pid
 
 
-def read_flush(ep_in, max_attempts=5):
+def read_flush(ep_in, max_attempts=5, timeout=100, size=512):
     """
     Flush the USB IN endpoint by reading available data until timeout or max attempts reached.
     """
     for _ in range(max_attempts):
         try:
-            ep_in.read(512, timeout=100)
+            garbage = ep_in.read(size, timeout)
+            #logger.debug(f"Flushing USB IN endpoint... {len(garbage) } bytes read and discarded.")
         except usb.core.USBError as e:
             if e.errno == 110 or e.args[0] == 'Operation timed out':
                 break
@@ -511,7 +512,7 @@ def read_flush(ep_in, max_attempts=5):
                 break
 
 
-def write_to_device(dev, data, timeout=2000):
+def write_to_device(dev, data, timeout=2000, read_response=True):
     cfg = dev.get_active_configuration()
     intf = usb.util.find_descriptor(cfg, bInterfaceNumber=0)
     if intf is None:
@@ -526,6 +527,10 @@ def write_to_device(dev, data, timeout=2000):
         ep_out.write(data, timeout)
     except usb.core.USBError as e:
         print("USB write error:", e)
+        return None
+
+    if (not read_response):
+        read_flush(ep_in, max_attempts=1, timeout=1, size=4096)
         return None
 
     try:
@@ -617,7 +622,7 @@ def send_image(dev, png_data: bytes):
     cmd_packet[11] = img_size & 0xFF
 
     full_payload = encrypt_command_packet(cmd_packet) + png_data
-    return write_to_device(dev, full_payload)
+    return write_to_device(dev, full_payload, 2000, False)
 
 
 def clear_image(dev):
