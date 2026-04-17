@@ -284,7 +284,9 @@ class LcdComm(ABC):
         d = ImageDraw.Draw(text_image)
 
         # Adjust font size if text doesn't fit in width
+        initial_font_size = font_size
         if width > 0:
+            start_time = time.time()
             bbox = d.textbbox((0, 0), text, font=ttfont)
             text_width = bbox[2] - bbox[0]
             min_font_size = 8
@@ -293,6 +295,9 @@ class LcdComm(ABC):
                 ttfont = self.open_font(font, font_size)
                 bbox = d.textbbox((0, 0), text, font=ttfont)
                 text_width = bbox[2] - bbox[0]
+            end_time = time.time()
+            if initial_font_size != font_size:
+                logger.debug(f"Font size adjusted from {initial_font_size} to {font_size} in {end_time - start_time:.4f} seconds")
 
         if width == 0 or height == 0:
             left, top, right, bottom = d.textbbox((x, y), text, font=ttfont, align=align, anchor=anchor)
