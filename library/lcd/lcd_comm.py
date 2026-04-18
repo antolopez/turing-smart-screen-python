@@ -279,58 +279,65 @@ class LcdComm(ABC):
             # The text bitmap is created from provided background image : text with transparent background
             text_image = self.open_image(background_image)
 
-        # Get text bounding box
-        ttfont = self.open_font(font, font_size)
-        d = ImageDraw.Draw(text_image)
+        draw = ImageDraw.Draw(text_image)
+        lines = text.splitlines()
+        processed_lines = []
+        min_font_size = 8
 
-        # Adjust font size if text doesn't fit in width
-        initial_font_size = font_size
-        if width > 0:
-            start_time = time.time()
-            bbox = d.textbbox((0, 0), text, font=ttfont)
-            text_width = bbox[2] - bbox[0]
-            min_font_size = 8
-            while text_width > width and font_size > min_font_size:
-                font_size -= 1
-                ttfont = self.open_font(font, font_size)
-                bbox = d.textbbox((0, 0), text, font=ttfont)
-                text_width = bbox[2] - bbox[0]
-            end_time = time.time()
-            if initial_font_size != font_size:
-                logger.debug(f"Font size adjusted from {initial_font_size} to {font_size} in {end_time - start_time:.4f} seconds")
+        # --- FASE 1: Ajuste de fuente y cálculo de métricas exactas ---
+        for line in lines:
+            current_fs = font_size
+            ttfont = self.open_font(font, current_fs)
 
-        if width == 0 or height == 0:
-            left, top, right, bottom = d.textbbox((x, y), text, font=ttfont, align=align, anchor=anchor)
-
-            # textbbox may return float values, which is not good for the bitmap operations below.
-            # Let's extend the bounding box to the next whole pixel in all directions
-            left, top = math.floor(left), math.floor(top)
-            right, bottom = math.ceil(right), math.ceil(bottom)
-        else:
-            left, top, right, bottom = x, y, x + width, y + height
-
-            if anchor.startswith("m"):
-                x = int((right + left) / 2)
-            elif anchor.startswith("r"):
-                x = right
+            # Ajuste de ancho
+            if width > 0:
+                line_w = draw.textlength(line, font=ttfont)
+                while line_w > width and current_fs > min_font_size:
+                    current_fs -= 1
+                    ttfont = self.open_font(font, current_fs)
+                    line_w = draw.textlength(line, font=ttfont)
             else:
-                x = left
+                line_w = draw.textlength(line, font=ttfont)
 
-            if anchor.endswith("m"):
-                y = int((bottom + top) / 2)
-            elif anchor.endswith("b"):
-                y = bottom
-            else:
-                y = top
+            # Calculamos el alto de línea EXACTO que PIL usaría para esta fuente
+            # PIL usa el 'ascent' + 'descent' para el salto de línea multilínea
+            ascent, descent = ttfont.getmetrics()
+            line_h = ascent + descent
 
-        # Draw text onto the background image with specified color & font
-        d.text((x, y), text, font=ttfont, fill=font_color, align=align, anchor=anchor)
+            processed_lines.append({
+                'text': line,
+                'font': ttfont,
+                'w': int(line_w),
+                'h': line_h
+            })
 
-        # Restrict the dimensions if they overflow the display size
-        left = max(left, 0)
-        top = max(top, 0)
-        right = min(right, self.get_width())
-        bottom = min(bottom, self.get_height())
+        # --- FASE 2: Dimensiones del bloque ---
+        total_text_height = sum(l['h'] for l in processed_lines)
+        target_width = width if width > 0 else max(l['w'] for l in processed_lines)
+        target_height = height if height > 0 else total_text_height
+
+        # --- FASE 3: Dibujo ---
+        current_y = y
+        # Si hay anclaje central vertical, lo aplicamos al bloque completo
+        if anchor.endswith("m"):
+            current_y = y + (target_height - total_text_height) // 2
+        elif anchor.endswith("b"):
+            current_y = y + (target_height - total_text_height)
+
+        for l in processed_lines:
+            line_x = x
+            if align == 'center':
+                line_x = x + (target_width - l['w']) // 2
+            elif align == 'right':
+                line_x = x + (target_width - l['w'])
+
+            # Dibujamos. Usamos 'la' para que la Y sea el inicio del ascent.
+            draw.text((line_x, current_y), l['text'], font=l['font'], fill=font_color, anchor="la")
+            current_y += l['h'] # El salto es exactamente la suma de métricas
+
+        # --- FASE 4: Recorte ---
+        left, top = max(x, 0), max(y, 0)
+        right, bottom = min(x + target_width, self.get_width()), min(y + target_height, self.get_height())
 
         # Crop text bitmap to keep only the text
         text_image = text_image.crop(box=(left, top, right, bottom))
