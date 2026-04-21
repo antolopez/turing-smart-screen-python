@@ -2,29 +2,45 @@ from library.sensors.media_controller import MediaController, MediaInfo
 from plexapi.server import PlexServer
 from dataclasses import dataclass
 from typing import Optional
+import time
 from PIL import Image
 import requests
 from io import BytesIO
 from library.log import logger
 from datetime import datetime
+import traceback
 
 plex_last_reported_position = None
 plex_last_position_datetime = None
+plex_last_session = None
+plex_last_session_time = time.time()
+plex_last_thumbnail = None
+plex_last_thumbnail_url = None
 
 class PlexMediaController(MediaController):
-    def __init__(self, base_url: str, token: str, product: str, profile: str, device: str = None):
+    def __init__(self, base_url: str, token: str, product: str, profile: str, device: str = None, session_cache_timeout: int = 5):
         self._plex = PlexServer(base_url, token)
         self._current_info = MediaInfo()
         self.product = product
         self.profile = profile
         self.device = device
+        self.session_cache_timeout = session_cache_timeout
 
     def _get_thumbnail(self, thumb_url: str) -> Optional[Image.Image]:
         """Obtiene la miniatura de la canción actual"""
+        global plex_last_thumbnail, plex_last_thumbnail_url
+
         try:
+            if plex_last_thumbnail and plex_last_thumbnail_url == thumb_url:
+                return plex_last_thumbnail
+
+            logger.debug("Obteniendo miniatura de Plex: %s" % thumb_url)
             response = requests.get(thumb_url)
             if response.status_code == 200:
-                return Image.open(BytesIO(response.content))
+                image = Image.open(BytesIO(response.content))
+                plex_last_thumbnail = image
+                plex_last_thumbnail_url = thumb_url
+                return image
             else:
                 logger.error(f"Error al obtener la miniatura. Status code: {response.status_code}")
                 return None
@@ -32,7 +48,7 @@ class PlexMediaController(MediaController):
             logger.error(f"Error al obtener la miniatura: {str(e)}")
             return None
 
-    
+
     def _update_music_info(self, session) -> MediaInfo:
         """Actualiza la información para contenido musical"""
         try:
@@ -303,32 +319,40 @@ class PlexMediaController(MediaController):
 
     def _update_media_info(self) -> MediaInfo:
         """Actualiza la información del medio actual"""
+        global plex_last_session
+        global plex_last_session_time
+
         try:
-            sessions = self._plex.sessions()
-            for session in sessions:
-                logger.debug(f"Buscando sesión de Plex: {self.product}, {self.profile}, {self.device}")
-                is_target = session.player.product == self.product and session.player.profile == self.profile and (session.player.title == self.device or self.device is None)
-                if is_target or sessions.__len__() == 1:
-                    logger.debug(f"Encontrada sesión {session.player.product}, {session.player.profile}, {session.player.title}")
-                    logger.debug(f"Estado de reproducción: {session.player.state}")
+            selected_session = plex_last_session
 
-                    # Determinar el tipo de contenido
-                    media_type = session.type
-                    logger.debug(f"Tipo de medio detectado: {media_type}")
+            if (time.time() - plex_last_session_time) >= self.session_cache_timeout or not selected_session:
+                sessions = self._plex.sessions()
+                for session in sessions:
+                    #logger.debug(f"Buscando sesión de Plex: {self.product}, {self.profile}, {self.device}")
+                    is_target = session.player.product == self.product and session.player.profile == self.profile and (session.player.title == self.device or self.device is None)
+                    if is_target or sessions.__len__() == 1:
+                        logger.debug(f"Encontrada sesión {session.player.product}, {session.player.profile}, {session.player.title}")
+                        #logger.debug(f"Estado de reproducción: {session.player.state}")
 
-                    if media_type == 'track':
-                        return self._update_music_info(session)
-                    elif media_type == 'movie':
-                        return self._update_movie_info(session)
-                    elif media_type == 'episode':
-                        return self._update_episode_info(session)
-                    else:
-                        logger.warning(f"Tipo de medio no soportado: {media_type}")
-                        return MediaInfo()
+                        plex_last_session = session
+                        plex_last_session_time = time.time()
 
-            return MediaInfo()
+            # Determinar el tipo de contenido
+            media_type = selected_session.type if selected_session else None
+            #logger.debug(f"Tipo de medio detectado: {media_type}")
+
+            if media_type == 'track':
+                return self._update_music_info(selected_session)
+            elif media_type == 'movie':
+                return self._update_movie_info(selected_session)
+            elif media_type == 'episode':
+                return self._update_episode_info(selected_session)
+            else:
+                logger.warning(f"Tipo de medio no soportado: {media_type}")
+                return MediaInfo()
+
         except Exception as e:
-            logger.error(f"Error al actualizar la información de Plex: {str(e)}")
+            logger.error(f"Error al actualizar la información de Plex: {str(e)}\n{traceback.format_exc()}")
             return MediaInfo()
 
     def get_media_info(self) -> MediaInfo:

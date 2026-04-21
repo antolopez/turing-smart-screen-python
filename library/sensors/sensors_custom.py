@@ -199,7 +199,8 @@ class NowPlayingPlexTrack(CustomDataSource):
         product = plex_config.get('product', 'Plexamp')
         profile = plex_config.get('profile', 'Windows')
         device = plex_config.get('device', None)
-        self.media_controller = PlexMediaController(plex_config.get('url'),  plex_config.get('token'), product, profile, device)
+        custom_interval = config.THEME_DATA['STATS']['CUSTOM'].get("INTERVAL", 5)
+        self.media_controller = PlexMediaController(plex_config.get('url'),  plex_config.get('token'), product, profile, device, custom_interval)
         self.update_info()
 
     def update_info(self):
@@ -228,7 +229,8 @@ class NowPlayingPlexTrackRating(CustomDataSource):
         product = plex_config.get('product', 'Plexamp')
         profile = plex_config.get('profile', 'Windows')
         device = plex_config.get('device', None)
-        self.media_controller = PlexMediaController(plex_config.get('url'),  plex_config.get('token'), product, profile, device)
+        custom_interval = config.THEME_DATA['STATS']['CUSTOM'].get("INTERVAL", 5)
+        self.media_controller = PlexMediaController(plex_config.get('url'),  plex_config.get('token'), product, profile, device, custom_interval)
         self.update_info()
 
     def update_info(self):
@@ -237,7 +239,7 @@ class NowPlayingPlexTrackRating(CustomDataSource):
 
     def as_numeric(self) -> float:
         self.update_info()
-        return self.media_info.custom_data.get('rating', 0) or 0
+        return (self.media_info.custom_data and self.media_info.custom_data.get('rating', 0)) or 0
 
     def as_string(self) -> str:
         self.update_info()
@@ -257,7 +259,8 @@ class NowPlayingPlexTrackInfo(CustomDataSource):
         product = plex_config.get('product', 'Plexamp')
         profile = plex_config.get('profile', 'Windows')
         device = plex_config.get('device', None)
-        self.media_controller = PlexMediaController(plex_config.get('url'),  plex_config.get('token'), product, profile, device)
+        custom_interval = config.THEME_DATA['STATS']['CUSTOM'].get("INTERVAL", 5)
+        self.media_controller = PlexMediaController(plex_config.get('url'),  plex_config.get('token'), product, profile, device, custom_interval)
         self.update_info()
 
     def update_info(self):
@@ -269,6 +272,9 @@ class NowPlayingPlexTrackInfo(CustomDataSource):
 
     def as_string(self) -> str:
         self.update_info()
+
+        if (not self.media_info.custom_data):
+            return 'Desconocido'
 
         year = self.media_info.custom_data.get('year', 0) or ''
 
