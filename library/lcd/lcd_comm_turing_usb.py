@@ -62,6 +62,14 @@ CMD_STOP_STREAM = 123
 # Default max payload for frame uploads (device/transport limit)
 MAX_IMAGE_PAYLOAD_DEFAULT = MAX_CHUNK_BYTES
 
+# Minimum interval between image sends (in milliseconds)
+MIN_SEND_INTERVAL_MS = 100
+
+# Global variable to track the last time an image was sent
+_last_image_send_time = 0.0
+_fps_frame_count = 0
+_fps_start_time = time.time()
+
 
 def _resp_ok(resp: Optional[bytes]) -> bool:
     if not resp:
@@ -113,14 +121,42 @@ def _encode_jpeg_under_limit(image: Image.Image, *, max_bytes: int, quality: int
 
 
 def send_pil_image_auto(dev, image: Image.Image, *, max_bytes: int = MAX_IMAGE_PAYLOAD_DEFAULT, ) -> None:
+    global _last_image_send_time, _fps_frame_count, _fps_start_time
+    current_time = time.time()
+    if (current_time - _last_image_send_time) * 1000 < MIN_SEND_INTERVAL_MS:
+        return
+
     # First try PNG (preferred)
     png = _encode_png(image)
+
     if len(png) <= max_bytes:
         send_image(dev, png)
-        return
-    # Fallback to JPEG when over limit (default behavior)
-    jpg = _encode_jpeg_under_limit(image, max_bytes=max_bytes, quality=90, subsampling=-1)
-    send_jpeg(dev, jpg)
+    else:
+        # Fallback to JPEG when over limit (default behavior)
+        logger.debug(f"  PNG size {len(png)} exceeds limit {max_bytes}, encoding JPEG...")
+        start_jpeg = time.time()
+        jpg = _encode_jpeg_under_limit(image, max_bytes=max_bytes, quality=90, subsampling=-1)
+        end_jpeg = time.time()
+        logger.debug(f"  JPEG encoding took {end_jpeg - start_jpeg:.4f}s, size: {len(jpg)} bytes")
+
+        start_send = time.time()
+        send_jpeg(dev, jpg)
+        end_send = time.time()
+        logger.debug(f"  JPEG send took {end_send - start_send:.4f}s")
+
+    _last_image_send_time = time.time()
+
+    #Lógica de LOG de FPS (cada 5 segundos para no saturar el log)
+    _fps_frame_count += 1
+    elapsed = current_time - _fps_start_time
+
+    if elapsed >= 5.0:  # Reportar cada 5 segundos
+        real_fps = _fps_frame_count / elapsed
+        logger.info(f"Monitor Stats: {real_fps:.2f} FPS reales | Intervalo: {elapsed/_fps_frame_count*1000:.1f}ms/frame")
+
+        # Reset para el siguiente ciclo
+        _fps_frame_count = 0
+        _fps_start_time = current_time
 
 
 # ---- MP4 parsing + Annex-B extraction (pure Python fallback) ----
