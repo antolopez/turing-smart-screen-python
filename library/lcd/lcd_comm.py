@@ -23,6 +23,7 @@ import math
 import os
 import platform
 import queue
+import re
 import sys
 import threading
 import time
@@ -236,6 +237,8 @@ class LcdComm(ABC):
 
         self.DisplayPILImage(image, x, y, width, height)
 
+    RE_EMOJI = re.compile(r'([\U00010000-\U0010ffff]+)')
+
     def DisplayText(
             self,
             text: str,
@@ -253,6 +256,7 @@ class LcdComm(ABC):
     ):
         # Convert text to bitmap using PIL and display it
         # Provide the background image path to display text with transparent background
+        font_emoji = "./res/fonts/noto/NotoEmoji-Bold.ttf"
 
         font_color = parse_color(font_color)
         background_color = parse_color(background_color)
@@ -331,9 +335,30 @@ class LcdComm(ABC):
             elif align == 'right':
                 line_x = x + (target_width - l['w'])
 
-            # Dibujamos. Usamos 'la' para que la Y sea el inicio del ascent.
-            draw.text((line_x, current_y), l['text'], font=l['font'], fill=font_color, anchor="la")
-            current_y += l['h'] # El salto es exactamente la suma de métricas
+            # --- Lógica de Fallback ---
+            cursor_x = line_x
+            # Troceamos la línea: ['Texto normal ', '🔥', ' más texto']
+            segments = self.RE_EMOJI.split(l['text'])
+
+            # Obtenemos el tamaño de fuente que calculó el escalador de la Fase 1
+            current_fs = l['font'].size
+            # Abrimos la fuente de emojis al mismo tamaño (Pillow la cacheará)
+            ttfont_emoji = self.open_font(font_emoji, current_fs)
+
+            for part in segments:
+                if not part: continue
+
+                # Determinamos qué fuente usar para este trozo
+                is_emoji = bool(self.RE_EMOJI.match(part))
+                active_font = ttfont_emoji if is_emoji else l['font']
+
+                # Dibujamos el trozo
+                draw.text((cursor_x, current_y), part, font=active_font, fill=font_color, anchor="la")
+
+                # Avanzamos el cursor X el ancho exacto del trozo dibujado
+                cursor_x += draw.textlength(part, font=active_font)
+
+            current_y += l['h']
 
         # --- FASE 4: Recorte ---
         left, top = max(x, 0), max(y, 0)
