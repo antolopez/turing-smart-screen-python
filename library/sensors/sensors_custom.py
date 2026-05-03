@@ -30,8 +30,10 @@ from PIL import Image
 from library.sensors.windows_media_controller import WindowsMediaController
 from library.sensors.plex_media_controller import PlexMediaController
 from library.sensors.present_mon_controller import PresentMonController
+from library.sensors.sensors_hwinfo import HWInfo
 import library.config as config
 import re
+
 
 # Custom data classes must be implemented in this file, inherit the CustomDataSource and implement its 2 methods
 class CustomDataSource(ABC):
@@ -346,3 +348,138 @@ class PresentMonExtraInfoDataSource:
 
     def as_image(self):
         pass
+
+# --- Instancia global para que todos los sensores compartan la misma lectura ---
+# Asegúrate de que la clase HWInfo (la que arreglamos antes) esté definida más arriba en este mismo archivo
+hwinfo_reader = HWInfo()
+
+class HWInfoCPUTempDataSource(CustomDataSource):
+    def __init__(self):
+        super().__init__()
+        self._values = []
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        # Usamos la clase centralizada para obtener el valor
+        current_temp = hwinfo_reader.get_sensor_value("CPU Package")
+
+        # Gestión del historial para gráficas
+        self._values.append(current_temp)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return current_temp
+
+    def as_string(self) -> str:
+        val = self.as_numeric()
+        return f"{int(val)}°C"
+
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])
+
+
+class HWInfoDiskActivityDataSource(CustomDataSource):
+    def __init__(self):
+        super().__init__()
+        self._values = []
+        self._disk_info = {"letter": "N/A", "number": "N/A", "activity": 0.0}
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        # Usamos la función especializada que ya filtra letras, números y PCH
+        self._disk_info = hwinfo_reader.get_disk_activity_info()
+        max_activity = self._disk_info["activity"]
+
+        self._values.append(max_activity)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return max_activity
+
+    def as_string(self) -> str:
+        # Extraemos la información actualizada por as_numeric()
+        letter = self._disk_info.get('letter', 'N/A')
+        number = self._disk_info.get('number', 'N/A')
+        activity = self._disk_info.get('activity', 0.0)
+
+        letter_info = f"({letter})" if letter != "N/A" else ""
+        number_info = f"(Disk {number})" if number != "N/A" else ""
+
+        if letter != "N/A":
+            return f"{int(activity)}% {letter_info}"
+        elif number != "N/A":
+            return f"{int(activity)}% {number_info}"
+        else:
+            return f"{int(activity)}%"
+
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])
+
+
+class HWInfoAverageEffectiveClockDataSource(CustomDataSource):
+    def __init__(self):
+        super().__init__()
+        self._values = []
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        # Usamos la clase centralizada
+        current_clock = hwinfo_reader.get_sensor_value("Average Effective Clock")
+
+        self._values.append(current_clock)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return current_clock
+
+    def as_string(self) -> str:
+        val = self.as_numeric()
+        return f"{val:.0f} MHz"
+
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])
+
+
+class HWInfoThermalThrottlingDataSource(CustomDataSource):
+    def __init__(self):
+        super().__init__()
+        self._values = []
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        # Usamos la clase centralizada
+        current_throttling = hwinfo_reader.get_sensor_value("Package/Ring Thermal Throttling")
+
+        self._values.append(current_throttling)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return current_throttling
+
+    def as_string(self) -> str:
+        val = self.as_numeric()
+        return f"{val:.1f}%"
+
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])
+
