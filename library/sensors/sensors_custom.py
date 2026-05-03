@@ -29,6 +29,7 @@ from typing import List
 from PIL import Image
 from library.sensors.windows_media_controller import WindowsMediaController
 from library.sensors.plex_media_controller import PlexMediaController
+from library.sensors.present_mon_controller import PresentMonController
 import library.config as config
 import re
 
@@ -309,3 +310,39 @@ class NowPlayingPlexTrackInfo(CustomDataSource):
     def last_values(self) -> List[float]:
         pass
 
+
+# --- SENSOR DE FPS (PresentMon) ---
+class PresentMonFPSDataSource:
+    def __init__(self):
+        self.present_mon = PresentMonController()  # Iniciar el controlador de PresentMon para que comience a recolectar datos
+        self.present_mon._start_monitoring()
+
+    def as_numeric(self) -> float:
+        return self.present_mon.get_current_metrics().get("fps", 0.0)
+
+    def as_string(self) -> str:
+        return f'{self.as_numeric()}FPS'
+
+    def last_values(self):
+        pass
+
+    def as_image(self):
+        pass
+
+class PresentMonExtraInfoDataSource:
+    def __init__(self):
+        self.present_mon = PresentMonController()  # Iniciar el controlador de PresentMon para que comience a recolectar datos
+        self.present_mon._start_monitoring()
+
+    def as_numeric(self) -> float:
+        pass
+
+    def as_string(self) -> str:
+        metrics = self.present_mon.get_current_metrics()
+        return f"{metrics['app_name']}({metrics['api']})[{metrics['limiter']}]{metrics['latency']:.1f}ms" if metrics['fps'] > 1.0 else "IDLE"
+
+    def last_values(self):
+        pass
+
+    def as_image(self):
+        pass
