@@ -323,7 +323,7 @@ class PresentMonFPSDataSource:
         return self.present_mon.get_current_metrics().get("fps", 0.0)
 
     def as_string(self) -> str:
-        return f'{self.as_numeric()}FPS'
+        return f'{int(self.as_numeric())}\nFPS'
 
     def last_values(self):
         pass
@@ -341,7 +341,7 @@ class PresentMonExtraInfoDataSource:
 
     def as_string(self) -> str:
         metrics = self.present_mon.get_current_metrics()
-        return f"{metrics['app_name']}({metrics['api']})[{metrics['limiter']}]{metrics['latency']:.1f}ms" if metrics['fps'] > 1.0 else "IDLE"
+        return f"{metrics['app_name']}\n\n{metrics['api']}\n{metrics['limiter']}\n{metrics['latency']:.1f}ms" if metrics['fps'] > 1.0 else "IDLE"
 
     def last_values(self):
         pass
