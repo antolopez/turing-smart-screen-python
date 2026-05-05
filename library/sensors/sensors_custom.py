@@ -382,20 +382,77 @@ class HWInfoCPUTempDataSource(CustomDataSource):
     def last_values(self):
         return getattr(self, '_values', [0.0])
 
-
-class HWInfoDiskActivityDataSource(CustomDataSource):
+class HWInfoCoreVIDDataSource(CustomDataSource):
     def __init__(self):
         super().__init__()
         self._values = []
-        self._disk_info = {"letter": "N/A", "number": "N/A", "activity": 0.0}
 
     def as_numeric(self) -> float:
         if not hasattr(self, '_values'):
             self._values = []
 
-        # Usamos la función especializada que ya filtra letras, números y PCH
-        self._disk_info = hwinfo_reader.get_disk_activity_info()
-        max_activity = self._disk_info["activity"]
+        # Usamos el nuevo método pasándole el nombre EXACTO del hijo
+        current_vid = hwinfo_reader.get_cpu_sensor_value("Vcore")
+
+        # NOTA: Si en tu placa/procesador resulta que HWiNFO lo llama "Vcore",
+        # simplemente cambias "Core VIDs" por "Vcore" en la línea de arriba.
+
+        self._values.append(current_vid)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return current_vid
+
+    def as_string(self) -> str:
+        val = self.as_numeric()
+        return f"{val:.3f} V"
+
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])
+
+class HWInfoAverageEffectiveClockDataSource(CustomDataSource):
+    def __init__(self):
+        super().__init__()
+        self._values = []
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        # Pedimos el nombre EXACTO
+        current_clock = hwinfo_reader.get_cpu_sensor_value("Average Effective Clock")
+
+        self._values.append(current_clock)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return current_clock
+
+    def as_string(self) -> str:
+        val = self.as_numeric()
+        return f"{int(val)} MHz"
+
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])
+
+class HWInfoDiskActivityDataSource(CustomDataSource):
+    """Clase pensada para el RADIAL (solo devuelve el porcentaje limpio)"""
+    def __init__(self):
+        super().__init__()
+        self._values = []
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        disk_info = hwinfo_reader.get_disk_activity_info()
+        max_activity = disk_info["activity"]
 
         self._values.append(max_activity)
         if len(self._values) > 30:
@@ -404,20 +461,48 @@ class HWInfoDiskActivityDataSource(CustomDataSource):
         return max_activity
 
     def as_string(self) -> str:
-        # Extraemos la información actualizada por as_numeric()
-        letter = self._disk_info.get('letter', 'N/A')
-        number = self._disk_info.get('number', 'N/A')
-        activity = self._disk_info.get('activity', 0.0)
+        # Solo devuelve "15%" para que el texto central del Radial no se rompa
+        val = self.as_numeric()
+        return f"{int(val)}%"
 
-        letter_info = f"({letter})" if letter != "N/A" else ""
-        number_info = f"(Disk {number})" if number != "N/A" else ""
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])
+
+
+class HWInfoDiskActivityTextDataSource(CustomDataSource):
+    """Clase pensada para el TEXTO (devuelve porcentaje + letra de la unidad)"""
+    def __init__(self):
+        super().__init__()
+        self._values = []
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        disk_info = hwinfo_reader.get_disk_activity_info()
+        max_activity = disk_info["activity"]
+
+        self._values.append(max_activity)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return max_activity
+
+    def as_string(self) -> str:
+        disk_info = hwinfo_reader.get_disk_activity_info()
+        activity = disk_info.get('activity', 0.0)
+        letter = disk_info.get('letter', 'N/A')
+        number = disk_info.get('number', 'N/A')
 
         if letter != "N/A":
-            return f"{int(activity)}% {letter_info}"
+            return f"DISK {letter}"
         elif number != "N/A":
-            return f"{int(activity)}% {number_info}"
+            return f"DISK {number}"
         else:
-            return f"{int(activity)}%"
+            return f"DISK {int(activity)}%"
 
     def as_image(self):
         pass
@@ -483,3 +568,193 @@ class HWInfoThermalThrottlingDataSource(CustomDataSource):
     def last_values(self):
         return getattr(self, '_values', [0.0])
 
+class HWInfoRAMAvgTempDataSource(CustomDataSource):
+    def __init__(self):
+        super().__init__()
+        self._values = []
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        total_temp = 0.0
+        count = 0
+
+        # Nos aseguramos de tener los datos más recientes
+        hwinfo_reader._read_shared_memory()
+
+        # Recorremos toda la memoria buscando todos los módulos de RAM
+        for full_name, value in hwinfo_reader._sensor_data.items():
+            # Buscamos específicamente los nombres largos para no contar doble el nombre corto
+            if full_name.endswith(" - SPD Hub Temperature"):
+                total_temp += value
+                count += 1
+
+        # Calculamos la media. Si no encuentra ninguna RAM (count = 0), devuelve 0.0 para no dar error
+        avg_temp = (total_temp / count) if count > 0 else 0.0
+
+        self._values.append(avg_temp)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return avg_temp
+
+    def as_string(self) -> str:
+        val = self.as_numeric()
+        # Lo dejamos en número entero para que se vea limpio en pantalla
+        return f"{int(val)}°C"
+
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])
+
+class HWInfoDiskReadRateDataSource(CustomDataSource):
+    def __init__(self):
+        super().__init__()
+        self._values = []
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        # Usamos la info que ya nos da el método centralizado
+        disk_info = hwinfo_reader.get_disk_activity_info()
+        read_rate = disk_info.get("read_rate", 0.0)
+
+        self._values.append(read_rate)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return read_rate
+
+    def as_string(self) -> str:
+        val = self.as_numeric()
+        return f"{val:.1f} MB/s"
+
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])
+
+
+class HWInfoDiskWriteRateDataSource(CustomDataSource):
+    def __init__(self):
+        super().__init__()
+        self._values = []
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        disk_info = hwinfo_reader.get_disk_activity_info()
+        write_rate = disk_info.get("write_rate", 0.0)
+
+        self._values.append(write_rate)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return write_rate
+
+    def as_string(self) -> str:
+        val = self.as_numeric()
+        return f"{val:.1f} MB/s"
+
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])
+
+class HWInfoNetDownloadDataSource(CustomDataSource):
+    def __init__(self):
+        super().__init__()
+        self._values = []
+
+        # --- ¡CONFIGURA AQUÍ TU VELOCIDAD! ---
+        # Pon los Megas que tienes contratados (ej: 300, 600, 1000)
+        self.MI_VELOCIDAD_CONTRATADA_MBPS = 1000
+
+        # Matemáticas internas: Convertimos Megabits a KiloBytes/segundo
+        # 1000 Mbps / 8 = 125 MB/s -> 125 * 1024 = 128000 KB/s
+        self.max_kbps = (self.MI_VELOCIDAD_CONTRATADA_MBPS / 8) * 1024
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        max_dl = 0.0
+        # Nos aseguramos de que los datos de HWiNFO están frescos
+        hwinfo_reader._read_shared_memory()
+
+        # Buscamos la tarjeta de red que esté descargando en este momento
+        for name, value in hwinfo_reader._sensor_data.items():
+            if name.endswith(" - Current DL rate"):
+                if value > max_dl:
+                    max_dl = value  # HWiNFO lo da en KB/s
+
+        # Calculamos el porcentaje
+        percentage = (max_dl / self.max_kbps) * 100.0
+
+        # Un seguro de vida por si algún día descargas más rápido de lo que tienes contratado
+        percentage = min(percentage, 100.0)
+
+        self._values.append(percentage)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return percentage
+
+    def as_string(self) -> str:
+        val = self.as_numeric()
+        return f"{int(val)}%"
+
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])
+
+
+class HWInfoNetUploadDataSource(CustomDataSource):
+    def __init__(self):
+        super().__init__()
+        self._values = []
+
+        # --- ¡CONFIGURA AQUÍ TU VELOCIDAD! ---
+        # Si tienes fibra simétrica, será igual que la descarga.
+        self.MI_VELOCIDAD_CONTRATADA_MBPS = 1000
+        self.max_kbps = (self.MI_VELOCIDAD_CONTRATADA_MBPS / 8) * 1024
+
+    def as_numeric(self) -> float:
+        if not hasattr(self, '_values'):
+            self._values = []
+
+        max_up = 0.0
+        hwinfo_reader._read_shared_memory()
+
+        for name, value in hwinfo_reader._sensor_data.items():
+            if name.endswith(" - Current UP rate"):
+                if value > max_up:
+                    max_up = value
+
+        percentage = (max_up / self.max_kbps) * 100.0
+        percentage = min(percentage, 100.0)
+
+        self._values.append(percentage)
+        if len(self._values) > 30:
+            self._values.pop(0)
+
+        return percentage
+
+    def as_string(self) -> str:
+        val = self.as_numeric()
+        return f"{int(val)}%"
+
+    def as_image(self):
+        pass
+
+    def last_values(self):
+        return getattr(self, '_values', [0.0])

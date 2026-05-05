@@ -10,7 +10,6 @@ class HWInfo:
         self._sensor_data = {}
 
     def _read_shared_memory(self):
-        """Lee la memoria compartida de HWiNFO y actualiza los datos de los sensores."""
         try:
             with mmap.mmap(-1, 0x2C, self.shmem_name, mmap.ACCESS_READ) as mm:
                 h = struct.unpack('<IIIqIIIIII', mm.read(0x2C))
@@ -19,7 +18,6 @@ class HWInfo:
                 sens_off, sens_size, sens_cnt = h[4], h[5], h[6]
                 # Bloque de Lecturas (Hijos)
                 read_off, read_size, read_cnt = h[7], h[8], h[9]
-
                 total_size = read_off + (read_size * read_cnt)
 
             with mmap.mmap(-1, total_size, self.shmem_name, mmap.ACCESS_READ) as mm:
@@ -64,22 +62,20 @@ class HWInfo:
         current_disk_letter = "N/A"
         current_disk_number = "N/A"
         fallback_name = "N/A"
+        best_parent_name = None  # disco ganador
 
-        logger.debug("--- BUSCANDO ACTIVIDAD DE DISCOS ---")
         for name, value in self._sensor_data.items():
-            if "Total Activity" in name or "Drive Activity" in name:
-                if name == "Total Activity" or name == "Drive Activity":
-                    continue
+            if name.endswith(" - Total Activity") or name.endswith(" - Drive Activity"):
+                # Extraemos el nombre del padre (quitando la parte de " - Total Activity")
+                parent_name = name.rsplit(" - ", 1)[0]
 
-                logger.debug(f"Evaluando sensor: '{name}' con valor {value}%")
-
-                # ¡LA MAGIA ESTÁ AQUÍ! Ahora busca [C:] o (C:), y lo mismo para Disk
                 match_letter = re.search(r'[\[\(]([A-Za-z]:)[\]\)]', name)
                 match_number = re.search(r'[\[\(]Disk (\d+)[\]\)]', name)
 
                 if match_letter or match_number:
                     if value > max_activity:
                         max_activity = value
+                        best_parent_name = parent_name  # Guardamos el nombre del disco
                         if match_letter:
                             current_disk_letter = match_letter.group(1)
                             current_disk_number = "N/A"
@@ -90,18 +86,48 @@ class HWInfo:
                     if "S.M.A.R.T." in name or "Drive:" in name:
                         if value > max_activity:
                             max_activity = value
+                            best_parent_name = parent_name  # Guardamos el nombre del disco
                             fallback_name = "Activo"
-                            logger.debug(f"  -> Disco detectado pero sin letra asignada: {name}")
 
         final_activity = max(max_activity, 0.0)
 
         if final_activity > 0.0 and current_disk_letter == "N/A" and current_disk_number == "N/A":
             current_disk_number = fallback_name
 
-        logger.debug(f"--- RESULTADO: Letra:{current_disk_letter} Num:{current_disk_number} Act:{final_activity}% ---")
+        # lectura y escritura exacta de ESE disco:
+        read_rate = 0.0
+        write_rate = 0.0
+        if best_parent_name:
+            read_rate = self._sensor_data.get(f"{best_parent_name} - Read Rate", 0.0)
+            write_rate = self._sensor_data.get(f"{best_parent_name} - Write Rate", 0.0)
 
         return {
             "letter": current_disk_letter,
             "number": current_disk_number,
-            "activity": final_activity
+            "activity": final_activity,
+            "read_rate": read_rate,   # Suele venir en MB/s
+            "write_rate": write_rate  # Suele venir en MB/s
         }
+
+    def get_cpu_sensor_value(self, reading_name: str) -> float:
+        """Encuentra un sensor ignorando al Padre, buscando solo el final del nombre."""
+        self._read_shared_memory()
+
+        target = f" - {reading_name}"
+
+        # 1. Búsqueda exacta: Busca cualquier sensor que termine en " - Core VIDs"
+        for full_name, value in self._sensor_data.items():
+            if full_name.endswith(target):
+                # Descomenta esto si quieres ver en el log quién era el verdadero Padre
+                # logger.debug(f"¡Cazado! Sensor exacto: '{full_name}' = {value}")
+                return value
+
+        # 2. Búsqueda flexible: Por si HWiNFO le pone algún espacio raro al final
+        for full_name, value in self._sensor_data.items():
+            if reading_name in full_name:
+                # logger.debug(f"Cazado por aproximación: '{full_name}' = {value}")
+                return value
+
+        # 3. Fallback de seguridad
+        logger.debug(f"No se ha encontrado el sensor: '{reading_name}'")
+        return 0.0
