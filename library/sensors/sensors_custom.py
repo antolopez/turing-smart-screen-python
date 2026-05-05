@@ -184,6 +184,8 @@ class NowPlayingWindowsPlayer(CustomDataSource):
         pass
 
     def as_string(self) -> str:
+        if (not self.media_info.custom_data):
+            return 'Desconocido'
         app = self.media_info.custom_data.get('application', 'Desconocido')
         # Usando regex para coger todo hasta el primer punto
         app = re.split(r'\.', app)[0]
