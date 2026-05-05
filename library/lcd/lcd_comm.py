@@ -237,7 +237,12 @@ class LcdComm(ABC):
 
         self.DisplayPILImage(image, x, y, width, height)
 
-    RE_EMOJI = re.compile(r'([\U00010000-\U0010ffff]+)')
+    # Grupo 1 (Noto): Emojis modernos + Selectores + Lista blanca de Emojis clásicos muy comunes (✨, ❤️, ⚡, ❄️, ☕, ⚠️, ⚽, etc.)
+    # Grupo 2 (DejaVu): TODO el macro-bloque de símbolos, flechas, ajedrez, cartas y formas geométricas (\u2500-\u2BFF)
+    NOTO = r'[\U00010000-\U0010FFFF\uFE0F\u200D\u2728\u2764\u26A0\u26A1\u26BD\u26BE\u26C4\u26C5\u2615\u267B\u2744\u2702\u2708\u2709\u270C\u270F\u2B50]+'
+    DEJAVU = r'[\u2500-\u2BFF]+'
+
+    RE_EMOJI = re.compile(f'({NOTO}|{DEJAVU})')
 
     def DisplayText(
             self,
@@ -254,10 +259,10 @@ class LcdComm(ABC):
             align: str = 'left',
             anchor: str = 'la',
     ):
-        # Convert text to bitmap using PIL and display it
-        # Provide the background image path to display text with transparent background
+        # Fuentes de soporte para emojis y símbolos clásicos
         font_emoji = "./res/fonts/noto/NotoEmoji-Bold.ttf"
-
+        font_symbol = "./res/fonts/dejavu/DejaVuSans-Bold.ttf"
+        # Provide the background image path to display text with transparent background
         font_color = parse_color(font_color)
         background_color = parse_color(background_color)
 
@@ -342,15 +347,20 @@ class LcdComm(ABC):
 
             # Obtenemos el tamaño de fuente que calculó el escalador de la Fase 1
             current_fs = l['font'].size
-            # Abrimos la fuente de emojis al mismo tamaño (Pillow la cacheará)
+            # Abrimos las dos fuentes especiales
             ttfont_emoji = self.open_font(font_emoji, current_fs)
+            ttfont_symbol = self.open_font(font_symbol, current_fs)
 
             for part in segments:
                 if not part: continue
 
-                # Determinamos qué fuente usar para este trozo
-                is_emoji = bool(self.RE_EMOJI.match(part))
-                active_font = ttfont_emoji if is_emoji else l['font']
+                # Determinamos qué fuente usar analizando el trozo
+                if re.match(f'^{self.NOTO}$', part):
+                    active_font = ttfont_emoji
+                elif re.match(f'^{self.DEJAVU}$', part):
+                    active_font = ttfont_symbol
+                else:
+                    active_font = l['font']
 
                 # Dibujamos el trozo
                 draw.text((cursor_x, current_y), part, font=active_font, fill=font_color, anchor="la")
