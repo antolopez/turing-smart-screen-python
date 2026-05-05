@@ -1,0 +1,590 @@
+---
+display:
+  DISPLAY_ORIENTATION: landscape
+  DISPLAY_RGB_LED: 61, 184, 225
+  DISPLAY_SIZE: 8.8"
+
+static_images:
+  BACKGROUND:
+    PATH: background.png
+    X: 0
+    Y: 0
+    WIDTH: 1920
+    HEIGHT: 480
+
+static_text:
+  CPU_TEXT:
+    TEXT: "CPU"
+    X: 750
+    Y: 35
+    FONT: generale-mono/GeneraleMonoA.ttf
+    FONT_SIZE: 22
+    FONT_COLOR: 0, 120, 255
+    BACKGROUND_IMAGE: background.png
+  GPU_TEXT:
+    TEXT: "GPU"
+    X: 750
+    Y: 310
+    FONT: generale-mono/GeneraleMonoA.ttf
+    FONT_SIZE: 25
+    FONT_COLOR: 0, 120, 255
+    BACKGROUND_IMAGE: background.png
+  RAM_TEXT:
+    TEXT: "RAM"
+    X: 990
+    Y: 35
+    FONT: generale-mono/GeneraleMonoA.ttf
+    FONT_SIZE: 22
+    FONT_COLOR: 0, 120, 255
+    BACKGROUND_IMAGE: background.png
+  RAM_FREE:
+    TEXT: "FREE"
+    X: 1090
+    Y: 80
+    FONT: generale-mono/GeneraleMonoA.ttf
+    FONT_SIZE: 12
+    FONT_COLOR: 0, 120, 255
+    BACKGROUND_IMAGE: background.png
+  DISK_READ:
+    TEXT: "READ"
+    X: 850
+    Y: 210
+    FONT: generale-mono/GeneraleMonoA.ttf
+    FONT_SIZE: 12
+    FONT_COLOR: 0, 120, 255
+    BACKGROUND_IMAGE: background.png
+  DISK_WRITE:
+    TEXT: "WRITE"
+    X: 850
+    Y: 245
+    FONT: generale-mono/GeneraleMonoA.ttf
+    FONT_SIZE: 12
+    FONT_COLOR: 0, 120, 255
+    BACKGROUND_IMAGE: background.png
+  NET_DOWNLOAD:
+    TEXT: "DOWNLOAD"
+    X: 1090
+    Y: 210
+    FONT: generale-mono/GeneraleMonoA.ttf
+    FONT_SIZE: 12
+    FONT_COLOR: 0, 120, 255
+    BACKGROUND_IMAGE: background.png
+  NET_UPLOAD:
+    TEXT: "UPLOAD"
+    X: 1090
+    Y: 245
+    FONT: generale-mono/GeneraleMonoA.ttf
+    FONT_SIZE: 12
+    FONT_COLOR: 0, 120, 255
+    BACKGROUND_IMAGE: background.png
+  NET:
+    TEXT: "NET"
+    X: 990
+    Y: 170
+    FONT: generale-mono/GeneraleMonoA.ttf
+    FONT_SIZE: 22
+    FONT_COLOR: 0, 120, 255
+    BACKGROUND_IMAGE: background.png
+
+
+STATS:
+  # All custom sensor classes are listed under CUSTOM
+  CUSTOM:
+
+    # For now the refresh interval (in seconds) is the same for all custom data classes
+    INTERVAL: 3
+
+    NowPlayingPlexTrack:
+      TEXT:
+        SHOW: True
+        X: 40
+        Y: 360
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 30
+        FONT_COLOR: 61, 184, 225
+        BACKGROUND_IMAGE: background.png
+        WIDTH: 630
+        HEIGHT: 75
+        ALIGN: center
+        ANCHOR: mm
+
+      IMAGE:
+        SHOW: True
+        X: 52
+        Y: 52
+        WIDTH: 232
+        HEIGHT: 232
+        BACKGROUND_IMAGE: background.png
+
+      GRAPH:
+        SHOW: True
+        X: 70
+        Y: 315
+        WIDTH: 577
+        HEIGHT: 20
+        MIN_VALUE: 0
+        MAX_VALUE: 100
+        BAR_COLOR: 200, 215, 0
+        BAR_OUTLINE: True
+        BACKGROUND_IMAGE: background.png
+
+    NowPlayingPlexTrackRating:
+      RATING:
+        SHOW: True
+        X: 330
+        Y: 240
+        WIDTH: 300
+        HEIGHT: 45
+        OUTLINE_COLOR: 200, 215, 0
+        OUTLINE_WIDTH: 2  # Grosor del borde
+        BACKGROUND_IMAGE: background.png
+        BACKGROUND_COLOR: 0, 0, 0
+
+      TEXT:
+        SHOW: True
+        X: 75
+        Y: 338
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 18
+        FONT_COLOR: 200, 215, 0
+        BACKGROUND_IMAGE: background.png
+        WIDTH: 577
+        HEIGHT: 18
+        ALIGN: center
+        ANCHOR: mm
+
+    NowPlayingPlexTrackInfo:
+      TEXT:
+        SHOW: True
+        X: 300
+        Y: 40
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 21
+        FONT_COLOR: 61, 184, 225
+        BACKGROUND_IMAGE: background.png
+        WIDTH: 375
+        HEIGHT: 200
+        ALIGN: center
+        ANCHOR: mm
+
+    NowPlayingWindowsTrack:
+      TEXT:
+        SHOW: True
+        X: 1243
+        Y: 351
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 30
+        FONT_COLOR: 61, 184, 225
+        BACKGROUND_IMAGE: background.png
+        WIDTH: 630
+        HEIGHT: 75
+        ALIGN: center
+        ANCHOR: mm
+
+      IMAGE:
+        SHOW: True
+        X: 1252
+        Y: 52
+        WIDTH: 232
+        HEIGHT: 232
+        BACKGROUND_IMAGE: background.png
+
+    NowPlayingWindowsTimeline:
+      GRAPH:
+        SHOW: True
+        X: 1275
+        Y: 310
+        WIDTH: 577
+        HEIGHT: 20
+        MIN_VALUE: 0
+        MAX_VALUE: 100
+        BAR_COLOR: 200, 215, 0
+        BAR_OUTLINE: True
+        BACKGROUND_IMAGE: background.png
+
+      TEXT:
+        SHOW: True
+        X: 1275
+        Y: 335
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 18
+        FONT_COLOR: 200, 215, 0
+        BACKGROUND_IMAGE: background.png
+        WIDTH: 577
+        HEIGHT: 18
+        ALIGN: center
+        ANCHOR: mm
+
+    NowPlayingWindowsTrackInfo:
+      TEXT:
+        SHOW: True
+        X: 1500
+        Y: 52
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 21
+        FONT_COLOR: 61, 184, 225
+        BACKGROUND_IMAGE: background.png
+        WIDTH: 375
+        HEIGHT: 180
+        ALIGN: center
+        ANCHOR: mm
+
+    NowPlayingWindowsPlayer:
+      TEXT:
+        SHOW: True
+        X: 1530
+        Y: 240
+        FONT: roboto-mono/RobotoMono-Bold.ttf
+        FONT_SIZE: 30
+        FONT_COLOR: 200, 215, 0
+        WIDTH: 300
+        HEIGHT: 45
+        BACKGROUND_IMAGE: background.png
+        ALIGN: center
+        ANCHOR: mm
+
+    PresentMonExtraInfoDataSource:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: False
+        X: 990
+        Y: 335
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 15
+        FONT_COLOR: 255, 255, 255
+        BACKGROUND_IMAGE: background.png
+        HEIGHT: 90
+        WIDTH: 140
+        ALIGN: center
+        ANCHOR: mt
+
+    PresentMonFPSDataSource:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 1120
+        Y: 360
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 30
+        FONT_COLOR: 200, 215, 0
+        BACKGROUND_IMAGE: background.png
+        HEIGHT: 70
+        WIDTH: 60
+        ALIGN: center
+        ANCHOR: mm
+
+    HWInfoCPUTempDataSource:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 850
+        Y: 70
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 15
+        FONT_COLOR: 255, 255, 255
+        BACKGROUND_IMAGE: background.png
+
+    HWInfoCoreVIDDataSource:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 850
+        Y: 90
+        WIDTH: 100
+        HEIGHT: 20
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 15
+        FONT_COLOR: 255, 255, 255
+        BACKGROUND_IMAGE: background.png
+
+    HWInfoAverageEffectiveClockDataSource:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 850
+        Y: 110
+        WIDTH: 100
+        HEIGHT: 20
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 15
+        FONT_COLOR: 255, 255, 255
+        BACKGROUND_IMAGE: background.png
+
+    HWInfoThermalThrottlingDataSource:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 850
+        Y: 130
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 15
+        FONT_COLOR: 255, 255, 255
+        BACKGROUND_IMAGE: background.png
+
+    HWInfoRAMAvgTempDataSource:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: False
+        X: 1090
+        Y: 120
+        WIDTH: 80
+        HEIGHT: 20
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 15
+        FONT_COLOR: 255, 255, 255
+        BACKGROUND_IMAGE: background.png
+
+    HWInfoDiskActivityTextDataSource:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: False
+        X: 750
+        Y: 170
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 22
+        FONT_COLOR: 0, 120, 255
+        BACKGROUND_IMAGE: background.png
+
+    HWInfoNetDownloadDataSource:
+      RADIAL:
+        SHOW: True
+        X: 1030
+        Y: 240
+        RADIUS: 40
+        WIDTH: 40
+        MIN_VALUE: 0
+        MAX_VALUE: 100
+        ANGLE_START: 270
+        ANGLE_END: 270
+        ANGLE_STEPS: 20
+        ANGLE_SEP: 0
+        CLOCKWISE: True
+        BAR_COLOR: 200, 215, 0
+        BAR_BACKGROUND_COLOR: 200, 230, 120
+        DRAW_BAR_BACKGROUND: True
+        BAR_DECORATION: Rectangle
+        SHOW_TEXT: True
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 30
+        FONT_COLOR: 61, 184, 225
+        BACKGROUND_IMAGE: background.png
+
+    HWInfoDiskActivityDataSource:
+      RADIAL:
+          SHOW: True
+          X: 780
+          Y: 240
+          RADIUS: 40
+          WIDTH: 40
+          MIN_VALUE: 0
+          MAX_VALUE: 100
+          ANGLE_START: 270
+          ANGLE_END: 270
+          ANGLE_STEPS: 20
+          ANGLE_SEP: 0
+          CLOCKWISE: True
+          BAR_COLOR: 200, 215, 0
+          BAR_BACKGROUND_COLOR: 200, 230, 120
+          DRAW_BAR_BACKGROUND: True
+          BAR_DECORATION: Rectangle
+          SHOW_TEXT: True
+          SHOW_UNIT: False
+          FONT: generale-mono/GeneraleMonoA.ttf
+          FONT_SIZE: 30
+          FONT_COLOR: 61, 184, 225
+          BACKGROUND_IMAGE: background.png
+
+    HWInfoDiskReadRateDataSource:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: False
+        X: 850
+        Y: 225
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 15
+        FONT_COLOR: 255, 255, 255
+        BACKGROUND_IMAGE: background.png
+
+    HWInfoDiskWriteRateDataSource:
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: False
+        X: 850
+        Y: 260
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 15
+        FONT_COLOR: 255, 255, 255
+        BACKGROUND_IMAGE: background.png
+
+  CPU:
+    PERCENTAGE:
+      INTERVAL: 1
+      RADIAL:
+        SHOW: True
+        X: 780
+        Y: 110
+        RADIUS: 40
+        WIDTH: 40
+
+        MIN_VALUE: 0
+        MAX_VALUE: 100
+        ANGLE_START: 270
+        ANGLE_END: 270
+        ANGLE_STEPS: 20
+        ANGLE_SEP: 0
+
+        CLOCKWISE: True
+        BAR_COLOR: 200, 215, 0
+        BAR_BACKGROUND_COLOR: 200, 230, 120
+        DRAW_BAR_BACKGROUND: True
+        BAR_DECORATION: Rectangle
+        SHOW_TEXT: True
+        SHOW_UNIT: True
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 30
+        FONT_COLOR: 61, 184, 225
+        # BACKGROUND_COLOR: 0, 0, 0
+        BACKGROUND_IMAGE: background.png
+  GPU:
+    INTERVAL: 1
+    PERCENTAGE:
+      RADIAL:
+          SHOW: True
+          X: 780
+          Y: 380
+          RADIUS: 35
+          WIDTH: 35
+
+          MIN_VALUE: 0
+          MAX_VALUE: 100
+          ANGLE_START: 270
+          ANGLE_END: 270
+          ANGLE_STEPS: 20
+          ANGLE_SEP: 0
+
+          CLOCKWISE: True
+          BAR_COLOR: 200, 215, 0
+          BAR_BACKGROUND_COLOR: 200, 230, 120
+          DRAW_BAR_BACKGROUND: True
+          BAR_DECORATION: Rectangle
+          SHOW_TEXT: True
+          SHOW_UNIT: True
+          FONT: generale-mono/GeneraleMonoA.ttf
+          FONT_SIZE: 25
+          FONT_COLOR: 61, 184, 225
+          # BACKGROUND_COLOR: 0, 0, 0
+          BACKGROUND_IMAGE: background.png
+    MEMORY_PERCENT:
+      RADIAL:
+          SHOW: True
+          X: 855
+          Y: 380
+          RADIUS: 35
+          WIDTH: 35
+
+          MIN_VALUE: 0
+          MAX_VALUE: 100
+          ANGLE_START: 270
+          ANGLE_END: 270
+          ANGLE_STEPS: 20
+          ANGLE_SEP: 0
+
+          CLOCKWISE: True
+          BAR_COLOR: 200, 215, 0
+          BAR_BACKGROUND_COLOR: 200, 230, 120
+          DRAW_BAR_BACKGROUND: True
+          BAR_DECORATION: Rectangle
+          SHOW_TEXT: True
+          SHOW_UNIT: True
+          FONT: generale-mono/GeneraleMonoA.ttf
+          FONT_SIZE: 25
+          FONT_COLOR: 61, 184, 225
+          # BACKGROUND_COLOR: 0, 0, 0
+          BACKGROUND_IMAGE: background.png
+    FREQUENCY:
+      INTERVAL: 5
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 900
+        Y: 360
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 15
+        FONT_COLOR: 255, 255, 255
+        BACKGROUND_IMAGE: background.png
+        ALIGN: left
+    TEMPERATURE:
+      INTERVAL: 1
+      TEXT:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 900
+        Y: 380
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 15
+        FONT_COLOR: 255, 255, 255
+        BACKGROUND_IMAGE: background.png
+        ALIGN: left
+  MEMORY:
+    INTERVAL: 5
+    VIRTUAL:
+      RADIAL:
+        SHOW: True
+        X: 1030
+        Y: 110
+        RADIUS: 40
+        WIDTH: 40
+
+        MIN_VALUE: 0
+        MAX_VALUE: 100
+        ANGLE_START: 270
+        ANGLE_END: 270
+        ANGLE_STEPS: 20
+        ANGLE_SEP: 0
+
+        CLOCKWISE: True
+        BAR_COLOR: 200, 215, 0
+        BAR_BACKGROUND_COLOR: 200, 230, 120
+        DRAW_BAR_BACKGROUND: True
+        BAR_DECORATION: Rectangle
+        SHOW_TEXT: True
+        SHOW_UNIT: True
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 30
+        FONT_COLOR: 61, 184, 225
+        # BACKGROUND_COLOR: 0, 0, 0
+        BACKGROUND_IMAGE: background.png
+      FREE:
+        SHOW: True
+        SHOW_UNIT: True
+        X: 1090
+        Y: 100
+        FONT: generale-mono/GeneraleMonoA.ttf
+        FONT_SIZE: 15
+        FONT_COLOR: 255, 255, 255
+        BACKGROUND_IMAGE: background.png
+
+  NET:
+    INTERVAL: 1
+    ETH:
+      UPLOAD:
+        TEXT:
+          SHOW: True
+          X: 1090
+          Y: 260
+          FONT: generale-mono/GeneraleMonoA.ttf
+          FONT_SIZE: 15
+          FONT_COLOR: 255, 255, 255
+          BACKGROUND_IMAGE: background.png
+      DOWNLOAD:
+        TEXT:
+          SHOW: True
+          X: 1090
+          Y: 225
+          FONT: generale-mono/GeneraleMonoA.ttf
+          FONT_SIZE: 15
+          FONT_COLOR: 255, 255, 255
+          BACKGROUND_IMAGE: background.png
+
+
+

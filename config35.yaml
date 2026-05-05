@@ -10,7 +10,7 @@ config:
   # Theme to use (located in res/themes)
   # Use the name of the folder as value
   # Choose a theme made for your screen size (see DISPLAY_SIZE inside theme.yaml)
-  THEME: NewTheme
+  THEME: PlexMediaInfo
 
   # Hardware sensors reading
   # Choose the appropriate method for reading your hardware sensors:
@@ -61,12 +61,12 @@ display:
   # - WEACT_B   for WeAct Studio Display FS V1 0.96"
   # - SIMU for simulated display (image written in screencap.png). Width & height will be detected from the theme
   # To identify your smart screen: https://github.com/mathoudebine/turing-smart-screen-python/wiki/Hardware-revisions
-  REVISION: TUR_USB
+  REVISION: A
 
   # Display Brightness
   # Set this as the desired %, 0 being completely dark and 100 being max brightness
   # Warning: revision A display can get hot at high brightness!
-  BRIGHTNESS: 3
+  BRIGHTNESS: 2
 
   # Display reverse: true/false
   # Set to true to reverse display orientation (landscape <-> reverse landscape, portrait <-> reverse portrait)
@@ -77,9 +77,11 @@ media_providers:
   plex:
     url: #
     token: #
-    #product: "Plexamp"
-    #profile: "Windows"
-    #device: #
+    #product: "Plex for Windows"
+    #profile: "Plex Desktop"
+    device: #
+  #windows_media:
+  #  enabled: true
 
   # Reset display on startup: true/false
   # By default, this program resets the display on startup, in case it is in a degraded state from previous runs.
