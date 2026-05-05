@@ -134,6 +134,10 @@ class WindowsMediaController(MediaController):
                             windows_last_position_datetime = datetime.now()
                     windows_last_track_reported = media_props.title
 
+                application_id = current_session.source_app_user_model_id
+                if (len(application_id) == 16 and application_id.isupper() and application_id.isalnum()):
+                    application_id = "Firefox"
+
                 self._current_info = MediaInfo(
                     title=media_props.title or "Desconocido",
                     artist=media_props.artist or "Desconocido",
@@ -148,7 +152,7 @@ class WindowsMediaController(MediaController):
                     thumbnail=await self._get_thumbnail(current_session),
                     custom_data={
                         "type": playback_info.playback_type.name,  # Acceder al tipo de reproducción
-                        "application": current_session.source_app_user_model_id,  # Obtener el ID de la aplicación
+                        "application": application_id,  # Obtener el ID de la aplicación
                     }
                 )
 
