@@ -16,10 +16,18 @@ plex_last_session = None
 plex_last_session_time = time.time()
 plex_last_thumbnail = None
 plex_last_thumbnail_url = None
+plex_server_offline = False
 
 class PlexMediaController(MediaController):
     def __init__(self, base_url: str, token: str, product: str, profile: str, device: str = None, session_cache_timeout: int = 5):
-        self._plex = PlexServer(base_url, token)
+        global plex_server_offline
+        try:
+            if not plex_server_offline:
+                self._plex = PlexServer(base_url, token)
+        except Exception as e:
+            plex_server_offline = True
+            logger.error(f"Error al inicializar PlexServer: {str(e)}")
+
         self._current_info = MediaInfo()
         self.product = product
         self.profile = profile
@@ -322,9 +330,12 @@ class PlexMediaController(MediaController):
         global plex_last_session
         global plex_last_session_time
 
+        if plex_server_offline:
+            logger.warning("Plex server está offline. No se puede actualizar la información del medio.")
+            return MediaInfo()
+
         try:
             selected_session = plex_last_session
-
             if (time.time() - plex_last_session_time) >= self.session_cache_timeout or not selected_session:
                 sessions = self._plex.sessions()
                 for session in sessions:
