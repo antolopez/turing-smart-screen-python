@@ -745,7 +745,11 @@ class LcdComm(ABC):
     def open_image(self, bitmap_path: str) -> Image.Image:
         if bitmap_path not in self.image_cache:
             logger.debug("Bitmap " + bitmap_path + " is now loaded in the cache")
-            self.image_cache[bitmap_path] = Image.open(bitmap_path)
+            try:
+                self.image_cache[bitmap_path] = Image.open(bitmap_path)
+            except OSError as e:
+                logger.warning(f"Error opening image {bitmap_path}: {e}. Returning a blank image instead.")
+                self.image_cache[bitmap_path] = Image.new('RGB', (self.get_width(), self.get_height()), (0, 0, 0)) # Return a black image
         return copy.copy(self.image_cache[bitmap_path])
 
     def open_font(self, name: str, size: int) -> ImageFont.FreeTypeFont:
