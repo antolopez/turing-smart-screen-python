@@ -79,6 +79,16 @@ class PresentMonController:
 
                         except (ValueError, IndexError):
                             continue
+
+                # Si el código llega a esta línea, significa que el bucle "infinito" SE HA ROTO.
+                return_code = proc.wait() # Esperamos a que el proceso termine del todo y nos dé su código de salida
+                logger.error(f"EL BUCLE SE HA ROTO: PresentMon (PID {proc.pid}) se ha cerrado inesperadamente.")
+                logger.error(f"Código de salida de PresentMon: {return_code}")
+
+                # Reseteamos la variable por si el programa intenta lanzarlo de nuevo más tarde
+                global presentmont_started
+                presentmont_started = False
+
             except Exception as e:
                 logger.error(f"Error al iniciar o procesar salida PresentMon: {e}")
 
