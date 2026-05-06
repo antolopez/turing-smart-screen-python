@@ -245,31 +245,38 @@ def display_themed_line_graph(theme_data, values):
     )
 
 def display_themed_dynamic_image(theme_data, value):
-    """Muestra una imagen dinámica manteniendo la relación de aspecto y centrándola"""
+    """Muestra una imagen dinámica manteniendo la relación de aspecto y centrándola sobre su fondo real"""
     if not theme_data.get("SHOW", False) or value is None:
         return
 
-    # Obtener dimensiones objetivo
+    # Obtener dimensiones y posición objetivo
     target_width = theme_data.get("WIDTH", 1)
     target_height = theme_data.get("HEIGHT", 1)
+    target_x = theme_data.get("X", 0)
+    target_y = theme_data.get("Y", 0)
 
-    # Crear una nueva imagen con el fondo especificado
+    # Crear una nueva imagen base (por defecto vacía/transparente)
     background = Image.new('RGBA', (target_width, target_height),
                           theme_data.get("BACKGROUND_COLOR", (0, 0, 0, 0)))
 
-    # Si hay imagen de fondo especificada, usarla
+    # Si hay imagen de fondo especificada, recortamos el trozo exacto
     background_image_path = get_theme_file_path(theme_data.get("BACKGROUND_IMAGE", None))
     if background_image_path:
         try:
             bg_img = Image.open(background_image_path)
-            bg_img = bg_img.resize((target_width, target_height), Image.Resampling.LANCZOS)
-            # Si la imagen de fondo tiene canal alpha, combinarla con el color de fondo
-            if bg_img.mode == 'RGBA':
-                background = Image.alpha_composite(background, bg_img)
-            else:
-                background = bg_img
+
+            # ¡LA MEJORA! Recortamos (crop) en lugar de redimensionar (resize)
+            # Pasamos las coordenadas: (izquierda, arriba, derecha, abajo)
+            bg_crop = bg_img.crop((target_x, target_y, target_x + target_width, target_y + target_height))
+
+            # Nos aseguramos de que el recorte tenga canal de transparencia
+            if bg_crop.mode != 'RGBA':
+                bg_crop = bg_crop.convert('RGBA')
+
+            # Combinamos el color base (si lo hubiera) con el recorte del fondo
+            background = Image.alpha_composite(background, bg_crop)
         except Exception as e:
-            logger.error(f"Error cargando imagen de fondo: {e}")
+            logger.error(f"Error cargando o recortando imagen de fondo: {e}")
 
     # Calcular relación de aspecto
     img_ratio = value.width / value.height
@@ -289,25 +296,31 @@ def display_themed_dynamic_image(theme_data, value):
             left_padding = (target_width - new_width) // 2
             top_padding = 0
 
-        # Redimensionar la imagen manteniendo proporción
+        # Redimensionar la imagen dinámica (ej: carátula) manteniendo proporción
         resized_img = value.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
-        # Pegar la imagen centrada sobre el fondo
-        background.paste(resized_img, (left_padding, top_padding))
+        # Nos aseguramos de que la imagen a pegar tenga canal alpha para no cargar un cuadro negro detrás
+        if resized_img.mode != 'RGBA':
+            resized_img = resized_img.convert('RGBA')
+
+        # Pegar la imagen centrada sobre nuestro fondo recortado usando la propia imagen como máscara de transparencia
+        background.paste(resized_img, (left_padding, top_padding), resized_img)
     else:
-        # Si no mantenemos proporción, simplemente redimensionar al tamaño objetivo
+        # Si no mantenemos proporción, simplemente redimensionamos al tamaño objetivo
+        # Aquí también es bueno componer sobre el fondo recortado si la imagen dinámica tiene transparencia
         resized_img = value.resize((target_width, target_height), Image.Resampling.LANCZOS)
-        background = resized_img
+        if resized_img.mode != 'RGBA':
+            resized_img = resized_img.convert('RGBA')
+        background.paste(resized_img, (0, 0), resized_img)
 
     # Mostrar la imagen final
     display.lcd.DisplayPILImage(
         image=background,
-        x=theme_data.get("X", 0),
-        y=theme_data.get("Y", 0),
+        x=target_x,
+        y=target_y,
         image_width=target_width,
         image_height=target_height,
     )
-
 def display_themed_star_rating(theme_data, value, max_value=10, stars=5):
     """
     Muestra un rating con estrellas
