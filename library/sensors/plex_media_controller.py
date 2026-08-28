@@ -359,7 +359,8 @@ class PlexMediaController(MediaController):
             elif media_type == 'episode':
                 return self._update_episode_info(selected_session)
             else:
-                logger.warning(f"Tipo de medio no soportado: {media_type}")
+                if media_type is not None:
+                    logger.warning(f"Tipo de medio no soportado: {media_type}")
                 return MediaInfo()
 
         except Exception as e:

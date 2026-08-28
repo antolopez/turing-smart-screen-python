@@ -32,7 +32,7 @@ class PresentMonController:
         # 1. Identificación básica
         app_name = parts[0].strip('"')
 
-        logger.debug(f"Datos recibidos: App='{app_name}', API='{parts[3]}', msFrame={parts[10]}, msGPU={parts[13]}, Latency={parts[14]}")
+        #logger.debug(f"Datos recibidos: App='{app_name}', API='{parts[3]}', msFrame={parts[10]}, msGPU={parts[13]}, Latency={parts[14]}")
         # 2. Extracción de datos (basada en tu output real)
         api = parts[3]              # DXGI
         ms_frame = float(parts[10]) # 1.777 (msBetweenPresents)

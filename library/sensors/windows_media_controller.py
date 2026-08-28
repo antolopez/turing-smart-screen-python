@@ -157,7 +157,7 @@ class WindowsMediaController(MediaController):
                 )
 
                 # Añadir el log aquí
-                logger.debug(str(self._current_info))
+                # logger.debug(str(self._current_info))
             else:
                 self._current_info = MediaInfo()
                 self._is_playing = False
