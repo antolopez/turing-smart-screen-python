@@ -40,7 +40,8 @@ import library.config as config
 from library.display import display
 from library.log import logger
 from library.lcd.color import parse_color
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 DEFAULT_HISTORY_SIZE = 10
 
